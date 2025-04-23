@@ -1,8 +1,8 @@
 pipeline {
     agent any
     stages {
-        steps {
-            stages {
+        stage ('build') {
+            steps {
                 echo 'Building the application...'
                 sh "docker build ."
             }
