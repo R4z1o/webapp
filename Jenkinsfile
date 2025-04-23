@@ -16,7 +16,7 @@ pipeline {
         }
         stage ('deploy to tomcat') {
             steps {
-                sh "docker run"
+                sh "docker run ."
             }
         }
     }
