@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y wget && \
     tar xvf apache-tomcat-10.1.40.tar.gz -C /opt/ && \
     rm apache-tomcat-10.1.40.tar.gz
 
-EXPOSE 8888
+EXPOSE 8080
 
 COPY --from=build /app/target/WebApp.war /opt/apache-tomcat-10.1.40/webapps/
 
