@@ -11,6 +11,6 @@ RUN apt-get update && apt-get install -y wget && \
 
 EXPOSE 8080
 
-COPY --from=build /app/target/WebApp.war /opt/apache-tomcat-${TOMCAT_VERSION}/webapps/
+COPY --from=build /app/target/WebApp.war /opt/apache-tomcat-10.1.40/webapps/
 
 CMD ["/opt/apache-tomcat-10.1.40/bin/catalina.sh", "run"]
