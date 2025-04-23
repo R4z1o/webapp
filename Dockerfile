@@ -3,6 +3,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 RUN mvn clean package
+FROM openjdk:17-jdk-slim
 ENV TOMCAT_VERSION 10.1.40
 RUN apt-get update && apt-get install -y wget && \
     wget https://downloads.apache.org/tomcat/tomcat-10/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz && \
