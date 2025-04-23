@@ -6,4 +6,4 @@ RUN mvn clean package
 FROM openjdk:17-jdk-slim
 EXPOSE 8081
 COPY --from=build /app/target/WebApp.war /root/apache-tomcat-10.1.40/webapps
-CMD ["bash /root/apache-tomcat-10.1.40/bin/catalina.sh", "run"]
+CMD ["/root/apache-tomcat-10.1.40/bin/catalina.sh", "run"]
