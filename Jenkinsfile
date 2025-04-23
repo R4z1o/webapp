@@ -3,6 +3,7 @@ pipeline {
     stages {
         steps {
             stages {
+                echo 'Building the application...'
                 sh "docker build ."
             }
         }
