@@ -16,14 +16,8 @@ pipeline {
         }
         stage ('deploy to tomcat') {
             steps {
+                echo 'deploying to tomcat'
                 sh "docker run -d -p 8888:8080 uwinchester/pfa_app"
-            }
-        }
-        stage ('push') {
-            steps {
-                echo 'Pushing the image to dockerhub...'
-                sh 'docker login -u uwinchester -p youdou203'
-                sh 'docker push uwinchester/pfa_app'
             }
         }
     }
