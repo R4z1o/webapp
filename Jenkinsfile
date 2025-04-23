@@ -14,6 +14,11 @@ pipeline {
                 sh 'docker push uwinchester/pfa_app'
             }
         }
+        stage ('deploy to tomcat') {
+            steps {
+                sh "docker run"
+            }
+        }
     }
 
 }
