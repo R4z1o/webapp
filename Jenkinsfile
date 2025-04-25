@@ -6,17 +6,17 @@ pipeline {
     stages {
         stage ('Initialize') {
             steps {
-                sh ```
+                sh '''
                     echo "PATH = ${PATH}"
                     echo "M2_HOME = ${M2_HOME}"
-                ```
+                '''
             }
         }
         stage ('Build') {
             steps {
-               sh ```
+               sh '''
                   'mvn clean package'
-               ```
+               '''
             }
         }
     }
