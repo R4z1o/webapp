@@ -17,7 +17,7 @@ pipeline {
         stage ('deploy to tomcat') {
             steps {
                 echo 'deploying to tomcat'
-                sh "docker run -d -p 8888:8080 uwinchester/pfa_app"
+                sh "docker run -d -p 8881:8080 uwinchester/pfa_app"
             }
         }
     }
