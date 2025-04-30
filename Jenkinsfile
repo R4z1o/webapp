@@ -1,23 +1,25 @@
 pipeline {
-   agent any
-    tools {
-        maven 'Maven'
-    }
+    agent any
     stages {
-        stage ('Initialize') {
+        stage ('build') {
             steps {
-                sh '''
-                    echo "PATH = ${PATH}"
-                    echo "M2_HOME = ${M2_HOME}"
-                '''
+                echo 'Building the application...'
+                sh "docker build -t uwinchester/pfa_app ."
             }
         }
-        stage ('Build') {
+        stage ('push') {
             steps {
-               sh '''
-                  'mvn clean package'
-               '''
+                echo 'Pushing the image to dockerhub...'
+                sh 'docker login -u uwinchester -p youdou203'
+                sh 'docker push uwinchester/pfa_app'
+            }
+        }
+        stage ('deploy to tomcat') {
+            steps {
+                echo 'deploying to tomcat'
+                sh "docker run -d -p 8888:8080 uwinchester/pfa_app"
             }
         }
     }
+
 }
