@@ -1,10 +1,16 @@
 pipeline {
     agent any
     stages {
+        stage ('owasp-dependency-check') {
+            steps {
+                echo 'OWASP dependecy check'
+                sh "docker build --target dependency-check -t uwinchester/pfa_app ."
+            }
+        }
         stage ('build') {
             steps {
                 echo 'Building the application...'
-                sh "docker build -t uwinchester/pfa_app ."
+                sh "docker build --target build -t uwinchester/pfa_app ."
             }
         }
         stage ('push') {
@@ -12,6 +18,11 @@ pipeline {
                 echo 'Pushing the image to dockerhub...'
                 sh 'docker login -u uwinchester -p youdou203'
                 sh 'docker push uwinchester/pfa_app'
+            }
+        }
+        stage ('dependecy check') {
+            steps {
+                
             }
         }
         stage ('deploy to tomcat') {
