@@ -4,7 +4,7 @@ pipeline {
         stage ('owasp-dependency-check') {
             steps {
                 echo 'OWASP dependecy check'
-                sh "docker build --target dependency-check -t uwinchester/pfa_app ."
+                sh "docker build -p 9000:9000 --target dependency-check -t uwinchester/pfa_app ."
             }
         }
         stage ('build') {
