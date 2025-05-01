@@ -6,12 +6,7 @@ pipeline {
                 dependencyCheck additionalArguments: '', odcInstallation: 'dependency-check'
                 dependencyCheckPublisher pattern:''
                 archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-report.xml', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
-                sh 'rm -rf dependency-check-report.xml*'
-            }
-        }
-        stage ('SCA snyk') {
-            steps {
-
+                sh "rm -rf dependency-check-report.xml*"
             }
         }
         stage ('build') {
