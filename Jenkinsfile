@@ -20,11 +20,7 @@ pipeline {
                 sh 'docker push uwinchester/pfa_app'
             }
         }
-        stage ('dependecy check') {
-            steps {
-                
-            }
-        }
+
         stage ('deploy to tomcat') {
             steps {
                 echo 'deploying to tomcat'
