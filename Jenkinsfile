@@ -3,14 +3,21 @@ pipeline {
     stages {
         stage ('owasp-dependency-check') {
             steps {
-                echo 'OWASP dependecy check'
-                sh "docker build --target dependency-check -t uwinchester/pfa_app ."
+                dependencyCheck additionalArguments: '', odcInstallation: 'dependency-check'
+                dependencyCheckPublisher pattern:''
+                archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-report.xml', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
+                sh 'rm -rf dependency-check-report.xml*'
+            }
+        }
+        stage ('SCA snyk') {
+            steps {
+
             }
         }
         stage ('build') {
             steps {
                 echo 'Building the application...'
-                sh "docker build --target build -t uwinchester/pfa_app ."
+                sh "docker build -t uwinchester/pfa_app ."
             }
         }
         stage ('push') {
