@@ -3,7 +3,8 @@ FROM owasp/dependency-check:7.1.1 as dependency-check
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
-RUN /usr/share/dependency-check/bin/dependency-check.sh --scan ./src --format ALL
+RUN /usr/share/dependency-check/bin/dependency-check.sh --scan ./src --format ALL && \
+    cat dependency-check-report.json
 # Build stage
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 COPY --from=dependency-check /app /app
