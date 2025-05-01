@@ -1,12 +1,20 @@
 pipeline {
     agent any
     stages {
-        stage ('owasp-dependency-check') {
+        stage ('OWASP-dependency-check') {
             steps {
                 dependencyCheck additionalArguments: '', odcInstallation: 'dependency-check'
                 dependencyCheckPublisher pattern:''
                 archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-report.xml', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
                 sh "rm -rf dependency-check-report.xml*"
+            }
+        }
+        stage ('SCA using snyk') {
+            steps {
+                snykSecurity {
+                    snykInstallation: 'snyk',
+                    snykTokenId: '79230cba-8022-423d-80b0-1c625dc7b13a'
+                }
             }
         }
         stage ('build') {
