@@ -1,7 +1,12 @@
-FROM maven:3.9.6-eclipse-temurin-17 AS build
+# Dependency check stage
+FROM owasp/dependency-check:7.1.1 as dependency-check
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
+RUN /usr/share/dependency-check/bin/dependency-check.sh --scan ./src
+# Build stage
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+WORKDIR /app
 RUN mvn clean package
 FROM amazoncorretto:21-alpine-jdk
 RUN apk add --no-cache wget tar
