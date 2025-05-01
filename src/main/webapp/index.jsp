@@ -10,7 +10,8 @@
 
     <title>Devsecops Course</title>
 
-
+    <!-- AWS_ACCESS_KEY_ID=AKIAABCDEFGHIJKLMNOP -->
+    <!-- AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYABCDEFGHIJKLMNOP -->
     <!-- Custom styles for this template -->
     <link href="jumbotron.css" rel="stylesheet">
 
