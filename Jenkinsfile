@@ -18,6 +18,9 @@ pipeline {
             }
         }
         stage ('Check-Git-Secrets') {
+            tools {
+                maven 'mvn'
+            }
             steps {
                 sh 'rm trufflehog || true'
                 sh 'docker pull gesellix/trufflehog'
