@@ -3,6 +3,7 @@ pipeline {
     stages {
         stage ('OWASP-dependency-check') {
             steps {
+                echo 'dependency check using OWASP'
                 dependencyCheck additionalArguments: '', odcInstallation: 'dependency-check'
                 dependencyCheckPublisher pattern:''
                 archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-report.xml', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
@@ -15,6 +16,7 @@ pipeline {
                     snykInstallation: 'snyk',
                     snykTokenId: '79230cba-8022-423d-80b0-1c625dc7b13a'
                 )
+                
             }
         }
         stage ('Check-Git-Secrets') {
@@ -49,5 +51,4 @@ pipeline {
             }
         }
     }
-
 }
