@@ -30,6 +30,16 @@ pipeline {
                 sh 'cat trufflehog'
             }
         }
+
+        stage('SonarQube Analysis') {
+            steps{
+                withSonarQubeEnv(installationName: 'sonarQube') {
+                  sh "mvn clean verify sonar:sonar -Dsonar.projectKey=jenkinsPipeline -Dsonar.projectName='jenkinsPipeline'"
+                }
+            }
+        }
+
+
         stage ('build') {
             steps {
                 echo 'Building the application...'
