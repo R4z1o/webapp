@@ -38,8 +38,6 @@ pipeline {
                 }
             }
         }
-
-
         stage ('build') {
             steps {
                 echo 'Building the application...'
@@ -54,11 +52,24 @@ pipeline {
             }
         }
 
-        stage ('deploy to tomcat') {
+        stage ('deploy to tomcat for DAST') {
             steps {
                 echo 'deploying to tomcat'
                 sh 'docker rm -f pfa_app'
                 sh "docker run -d -p 8881:8080 --name pfa_app uwinchester/pfa_app"
+            }
+        }
+        stage('DAST') {
+            steps{
+                script {
+                    sh '''
+                        docker pull owasp/zap2docker-stable
+                        docker run --rm \
+                            -t owasp/zap2docker-stable \
+                            zap-baseline.py \
+                            -t http://http://104.248.252.219:8081
+                        '''
+                }
             }
         }
     }
