@@ -68,6 +68,7 @@ pipeline {
                             -t owasp/zap2docker-stable \
                             zap-baseline.py \
                             -t http://http://104.248.252.219:8081
+                        '''
                 }
             }
         }
