@@ -60,7 +60,6 @@ pipeline {
                 sh '''   
                     grype uwinchester/pfa_app > grype-report.txt
                     cat grype-report.txt 
-                    archiveArtifacts artifacts: 'grype-report.txt'
                 '''
             }
         }
