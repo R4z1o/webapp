@@ -80,7 +80,7 @@ pipeline {
                             -v "$WORKSPACE/zap-reports:/zap/wrk" \
                             -u $(id -u):$(id -g) \
                             -t zaproxy/zap-stable \
-                            zap-baseline.py \
+                            zap-full-scan.py \
                             -t http://104.248.252.219/ \
                             -r zap-report.html
                         '''
