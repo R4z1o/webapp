@@ -3,7 +3,7 @@ services:
     image: uwinchester/pfa_app  
     container_name: tomcat-devsecops
     ports:
-      - "8080:8080"  
+      - "8080"  
     networks:
       - devsecops-net
 
@@ -15,7 +15,7 @@ services:
     volumes:
       - ./default.conf:/etc/nginx/conf.d/default.conf
     ports:
-      - "9090:9090"  
+      - "80:80"  
     networks:
       - devsecops-net
 
