@@ -69,7 +69,7 @@ pipeline {
                 sh "docker-compose up -d"
             }
         }
-        stage('DAST') {
+        stage('DAST~') {
             steps{
                 script {
                     sh '''
