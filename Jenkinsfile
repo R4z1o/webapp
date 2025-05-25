@@ -44,6 +44,15 @@ pipeline {
                 sh "docker build -t uwinchester/pfa_app ."
             }
         }
+        stage('Container Scan') {
+            steps {
+                sh '''   
+                    grype uwinchester/pfa_app > grype-report.txt
+                    cat grype-report.txt 
+                    archiveArtifacts artifacts: 'grype-report.txt'
+                '''
+            }
+        }
         stage ('push') {
             steps {
                 echo 'Pushing the image to dockerhub...'
