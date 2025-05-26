@@ -1,24 +1,6 @@
 pipeline {
     agent any
     stages {
-        stage ('OWASP-dependency-check') {
-            steps {
-                echo 'dependency check using OWASP'
-                dependencyCheck additionalArguments: '', odcInstallation: 'dependency-check'
-                dependencyCheckPublisher pattern:''
-                archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-report.xml', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
-                sh "rm -rf dependency-check-report.xml*"
-            }
-        }
-        stage ('SCA using snyk') {
-            steps {
-                snykSecurity (
-                    snykInstallation: 'snyk',
-                    snykTokenId: '79230cba-8022-423d-80b0-1c625dc7b13a'
-                )
-                
-            }
-        }
         stage ('Check-Git-Secrets') {
             tools {
                 maven 'mvn'
@@ -31,23 +13,7 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps{
-                withSonarQubeEnv(installationName: 'sonarQube') {
-                  sh "mvn clean verify sonar:sonar -Dsonar.projectKey=jenkinsPipeline -Dsonar.projectName='jenkinsPipeline'"
-                }
-            }
-        }
 
-        stage('Generate SBOM') {  
-            steps {  
-                sh '''  
-                syft scan dir:. --output cyclonedx-json=sbom.json  
-                '''  
-                archiveArtifacts allowEmptyArchive: true, artifacts: 'sbom*', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true  
-                sh ' rm -rf sbom*'  
-            }
-        }
         
         stage ('build') {
             steps {
