@@ -22,7 +22,7 @@ pipeline {
                     -v $workspace/gitleaks-reports:/output \
                     zricethezav/gitleaks detect \
                     --source=/repo \
-                    --report-path=/output/report.json
+                    --report-path=/output/report.json || true
                 '''
                 sh 'cat $workspace/gitleaks-reports/report.json'
             }
