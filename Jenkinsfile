@@ -1,7 +1,7 @@
 pipeline {
     agent any
     stages {
-        stage ('Check-Git-Secrets') {
+        stage ('Git Secrets Scanning') {
             tools {
                 maven 'mvn'
             }
@@ -12,6 +12,22 @@ pipeline {
                 sh 'cat trufflehog'
             }
         }
+        stage ('local secrets leaks scan') {
+            steps {
+                sh 'mkdir -p gitleaks-reports'
+                sh 'docker pull zricethezav/gitleaks'
+                sh '''
+                    docker run --rm \
+                    -v ./:/repo \
+                    -v $workspace/gitleaks-reports:/output \
+                    zricethezav/gitleaks detect \
+                    --source=/repo \
+                    --report-path=/output/report.json
+                '''
+            }
+
+
+        }
 
 
         
@@ -21,12 +37,14 @@ pipeline {
                 sh "docker build -t uwinchester/pfa_app ."
             }
         }
-        stage('Container Scan') {
+        stage('Infrastructure as Code (IaC) scanning') {
             steps {
-                sh '''   
-                    grype uwinchester/pfa_app > grype-report.txt
-                    cat grype-report.txt 
-                '''
+                script {
+                    sh '''  
+                        grype uwinchester/pfa_app > grype-report.txt
+                        cat grype-report.txt 
+                    '''
+                }
             }
         }
         stage ('push') {
