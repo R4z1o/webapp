@@ -24,6 +24,7 @@ pipeline {
                     --source=/repo \
                     --report-path=/output/report.json
                 '''
+                sh 'cat $workspace/gitleaks-reports/report.json'
             }
 
 
