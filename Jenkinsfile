@@ -66,10 +66,13 @@ pipeline {
         stage ('push') {
             steps {
                 echo 'Pushing the image to dockerhub...'
-                sh 'docker login -u uwinchester -p youdou203'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                sh "docker login -u $DOCKER_USER -p $DOCKER_PASS"
                 sh 'docker push uwinchester/pfa_app'
-            }
         }
+    }
+}
+
 
         stage ('deployement') {
             steps {
