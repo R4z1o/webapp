@@ -38,6 +38,15 @@ pipeline {
                 }
             }
         }
+        stage('Semgrep-Scan') {
+            environment {
+                SEMGREP_APP_TOKEN = credentials('SEMGREP_APP_TOKEN')
+            }
+            steps {
+                sh 'pip3 install semgrep'
+                sh 'semgrep ci'
+            }
+        }
 
         stage('Generate SBOM') {  
             steps {  
