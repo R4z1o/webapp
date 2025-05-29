@@ -3,7 +3,8 @@ pipeline {
 
     environment {
         TRIVY_CACHE_DIR = '/var/trivy-cache' 
-        DOCKER_IMAGE = 'uwinchester/pfa_app'   
+        DOCKER_IMAGE = 'uwinchester/pfa_app'
+        SEMGREP_APP_TOKEN = credentials('SEMGREP_APP_TOKEN')  
     }
     
     stages {
@@ -46,14 +47,18 @@ pipeline {
         }
         */
         stage('Semgrep-Scan') {
-            environment {
-                SEMGREP_APP_TOKEN = credentials('SEMGREP_APP_TOKEN')
-            }
             steps {
-                sh 'pip3 install semgrep --break-system-packages'
-                sh 'semgrep ci'
+                timeout(time: 10, unit: 'MINUTES') {
+                    sh '''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip3 install semgrep
+                        semgrep ci
+                    '''
+                }
             }
         }
+        
         stage('Generate SBOM') {  
             steps {  
                 sh '''  
