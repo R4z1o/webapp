@@ -114,20 +114,20 @@ pipeline {
     }
 }
         stage ('push') {
-            steps {
-                echo 'Pushing the image to dockerhub...'
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PWD'
-                )]) {
-                    sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PWD}"
-                    sh "docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest"
-                    sh "docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}"
-                    sh "docker push ${DOCKER_IMAGE}:latest"
-                }
-            }
+    steps {
+        echo 'Pushing the image to dockerhub...'
+        withCredentials([usernamePassword(
+            credentialsId: 'dockerhub-creds',
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PWD'
+        )]) {
+            sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PWD}"
+            sh "docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest"  // Fixed typo: BUILD_NUMBER
+            sh "docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+            sh "docker push ${DOCKER_IMAGE}:latest"
         }
+    }
+}
         stage ('deployement') {
             steps {
                 echo 'deploying to tomcat'
