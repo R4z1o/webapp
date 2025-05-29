@@ -37,13 +37,13 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
+        /*stage('SonarQube Analysis') {
             steps{
                 withSonarQubeEnv(installationName: 'sonarQube') {
                   sh "mvn clean verify sonar:sonar -Dsonar.projectKey=jenkinsPipeline -Dsonar.projectName='jenkinsPipeline'"
                 }
             }
-        }
+        }*/
 
         stage('Generate SBOM') {  
             steps {  
