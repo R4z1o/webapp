@@ -1,8 +1,7 @@
-version: "3.8"
+version: '3.8'
 
 services:
-
-  myapp:
+  tomcat:
     image: uwinchester/pfa_app  
     container_name: tomcat-devsecops
     ports:
@@ -10,29 +9,19 @@ services:
     networks:
       - devsecops-net
 
-  bunkerweb:
-    image: bunkerity/bunkerweb:1.5.10
+  nginx:
+    image: owasp/modsecurity-crs:nginx-alpine  
+    container_name: nginx-devsecops
+    depends_on:
+      - tomcat
+    volumes:
+      - ./nginx-modsec.conf:/etc/nginx/nginx.conf          
+      - ./modsecurity.conf:/etc/nginx/modsecurity.conf  
     ports:
-      - "80:8080"     # Public HTTP
-      - "443:8443"    # Public HTTPS (if needed)
-    environment:
-      - SERVER_NAME=www.example.com
-      - USE_REVERSE_PROXY=yes
-      - REVERSE_PROXY_URL=/
-      - REVERSE_PROXY_HOST=http://myapp:8080/WebApp/
-      - USE_CORAZA=yes
-      - CORAZA_API=http://bw-coraza:8080
+      - "80:80"
     networks:
-      - bw-universe
-      - bw-services
-
-  bw-coraza:
-    image: bunkerity/bunkerweb-coraza:latest
-    networks:
-      - bw-universe
+      - devsecops-net
 
 networks:
-  bw-universe:
-    driver: bridge
-  bw-services:
+  devsecops-net:
     driver: bridge
