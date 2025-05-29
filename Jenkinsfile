@@ -58,7 +58,10 @@ pipeline {
         stage ('build') {
             steps {
                 echo 'Building the application...'
-                sh "docker build -t uwinchester/pfa_app ."
+                sh """
+                    docker rmi ${DOCKER_IMAGE}:${BUILD_NUMBER} || true
+                    docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .
+                    """
             }
         }
         stage('Container Scan') {
