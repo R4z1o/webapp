@@ -52,7 +52,7 @@ pipeline {
             steps {
                 sh '''
                     python3 -m venv venv
-                    source venv/bin/activate
+                    . venv/bin/activate
                     pip3 install semgrep
                     semgrep ci
                 '''
