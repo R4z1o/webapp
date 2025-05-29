@@ -54,8 +54,8 @@ pipeline {
                     python3 -m venv venv
                     . venv/bin/activate
                     pip3 install semgrep
-                    semgrep ci
                 '''
+                sh 'semgrep ci'
             }
         }
         stage('Generate SBOM') {  
