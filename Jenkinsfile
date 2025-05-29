@@ -65,53 +65,54 @@ pipeline {
             }
         }
         stage('Container Scan') {
-            steps {
-                script {
-                    // Part A: Install Trivy if missing
-                    sh '''
-                    if ! command -v trivy &> /dev/null; then
-                        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-                    fi
-                    '''
-                    
-                    // Part B: Create cache and update DB
-                    sh "mkdir -p ${TRIVY_CACHE_DIR}"
-                    sh "trivy --cache-dir ${TRIVY_CACHE_DIR} image --download-db-only"
-                    
-                    // Part C: Run Grype 
-                    /*sh '''   
-                        grype ${DOCKER_IMAGE}:${BUILD_NUMBER} > grype-report.txt
-                        cat grype-report.txt 
-                    '''  
-                    archiveArtifacts 'grype-report.txt'
-                    */
-                    // Part D: Run Trivy Scan 
-                    sh """
-                        trivy --cache-dir ${TRIVY_CACHE_DIR} image \
-                            --format template \
-                            --template "@contrib/html.tpl" \
-                            --output trivy-report.html \
-                            --severity CRITICAL,HIGH \
-                            --ignore-unfixed \
-                            ${DOCKER_IMAGE}:${BUILD_NUMBER}
-                            
-                        trivy --cache-dir ${TRIVY_CACHE_DIR} image \
-                            --format json \
-                            --output trivy-report.json \
-                            --severity CRITICAL,HIGH \
-                            --ignore-unfixed \
-                            ${DOCKER_IMAGE}:${BUILD_NUMBER}
-                    """
-                    archiveArtifacts 'trivy-report.*'
-                    
-                    // Part E: Fail build if critical vulns found
-                   /* def trivyResults = readJSON file: 'trivy-report.json'
-                    if (trivyResults.Results.any { it.Vulnerabilities?.any { it.Severity == 'CRITICAL' } }) {
-                        error "Critical vulnerabilities found in container image - build failed"
-                    } */
-                }
+    steps {
+        script {
+            // Verify image exists locally before scanning
+            sh "docker inspect ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+            
+            // Install Trivy if missing
+            sh '''
+            if ! command -v trivy &> /dev/null; then
+                curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+            fi
+            '''
+            
+            // Setup cache
+            sh "mkdir -p ${TRIVY_CACHE_DIR}"
+            sh "trivy --cache-dir ${TRIVY_CACHE_DIR} image --download-db-only"
+            
+            // Run Trivy Scan
+            sh """
+            trivy --cache-dir ${TRIVY_CACHE_DIR} image \
+                --format template \
+                --template "@contrib/html.tpl" \
+                --output trivy-report.html \
+                --severity CRITICAL,HIGH \
+                --ignore-unfixed \
+                --skip-version-check \
+                ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                
+            trivy --cache-dir ${TRIVY_CACHE_DIR} image \
+                --format json \
+                --output trivy-report.json \
+                --severity CRITICAL,HIGH \
+                --ignore-unfixed \
+                --skip-version-check \
+                ${DOCKER_IMAGE}:${BUILD_NUMBER}
+            """
+            archiveArtifacts 'trivy-report.*'
+            
+            // Critical vulnerability check
+            def criticalFound = sh(
+                script: "jq -e '.Results[].Vulnerabilities[] | select(.Severity == \"CRITICAL\")' trivy-report.json",
+                returnStatus: true
+            ) == 0
+            if (criticalFound) {
+                error "Critical vulnerabilities found in container image"
             }
         }
+    }
+}
         stage ('push') {
             steps {
                 echo 'Pushing the image to dockerhub...'
