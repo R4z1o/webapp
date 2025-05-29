@@ -44,17 +44,20 @@ pipeline {
                 }
             }
         }
-        
+        */
         stage('Semgrep-Scan') {
             environment {
                 SEMGREP_APP_TOKEN = credentials('SEMGREP_APP_TOKEN')
             }
             steps {
-                sh 'source /root/.venv/bin/activate'
-                sh 'pip3 install semgrep'
-                sh 'semgrep ci'
+                sh '''
+                    python3 -m venv venv
+                    source venv/bin/activate
+                    pip3 install semgrep
+                    semgrep ci
+                '''
             }
-        }*/
+        }
         stage('Generate SBOM') {  
             steps {  
                 sh '''  
