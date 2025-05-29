@@ -79,8 +79,8 @@ pipeline {
         script {
 
             sh'''
-            find /tmp -name "trivy*" -exec rm -rf {} + 2>/dev/null || true
-            find /tmp -name "javadb*" -exec rm -rf {} + 2>/dev/null || true
+            find /var -name "trivy*" -exec rm -rf {} + 2>/dev/null || true
+            find /var -name "javadb*" -exec rm -rf {} + 2>/dev/null || true
             '''
             // Verify image exists locally before scanning
             sh "docker inspect ${DOCKER_IMAGE}"
