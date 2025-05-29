@@ -1,6 +1,12 @@
 pipeline {
     agent any
     stages {
+        stage ('pre-commit hooks'){
+            steps {
+                //talismannnnnnnnnnnnnnn
+            }
+
+        }
         stage ('Git Secrets Scanning') {
             tools {
                 maven 'mvn'
@@ -88,6 +94,12 @@ pipeline {
                 }
                 echo "[INFO] ZAP scan completed. Check the report if the build fails."
                 archiveArtifacts 'zap-reports/zap-report.html'
+            }
+        }
+        stage ('WAF'){
+            steps{
+                sh 'docker pull uwinchester/pfa_app'
+                sh ''
             }
         }
     }
