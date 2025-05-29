@@ -1,5 +1,11 @@
 pipeline {
     agent any
+
+    environment {
+        TRIVY_CACHE_DIR = '/tmp/trivy-cache' 
+        DOCKER_IMAGE = 'uwinchester/pfa_app'   
+    }
+    
     stages {
         stage ('OWASP-dependency-check') {
             steps {
@@ -57,20 +63,67 @@ pipeline {
         }
         stage('Container Scan') {
             steps {
-                sh '''   
-                    grype uwinchester/pfa_app > grype-report.txt
-                    cat grype-report.txt 
-                '''
+                script {
+                    // Part A: Install Trivy if missing
+                    sh '''
+                    if ! command -v trivy &> /dev/null; then
+                        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+                    fi
+                    '''
+                    
+                    // Part B: Create cache and update DB
+                    sh "mkdir -p ${TRIVY_CACHE_DIR}"
+                    sh "trivy --cache-dir ${TRIVY_CACHE_DIR} image --download-db-only"
+                    
+                    // Part C: Run Grype 
+                    sh '''   
+                        grype ${DOCKER_IMAGE}:${BUILD_NUMBER} > grype-report.txt
+                        cat grype-report.txt 
+                    '''
+                    archiveArtifacts 'grype-report.txt'
+                    
+                    // Part D: Run Trivy Scan 
+                    sh """
+                        trivy --cache-dir ${TRIVY_CACHE_DIR} image \
+                            --format template \
+                            --template "@contrib/html.tpl" \
+                            --output trivy-report.html \
+                            --severity CRITICAL,HIGH \
+                            --ignore-unfixed \
+                            ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                            
+                        trivy --cache-dir ${TRIVY_CACHE_DIR} image \
+                            --format json \
+                            --output trivy-report.json \
+                            --severity CRITICAL,HIGH \
+                            --ignore-unfixed \
+                            ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                    """
+                    archiveArtifacts 'trivy-report.*'
+                    
+                    // Part E: Fail build if critical vulns found
+                   /* def trivyResults = readJSON file: 'trivy-report.json'
+                    if (trivyResults.Results.any { it.Vulnerabilities?.any { it.Severity == 'CRITICAL' } }) {
+                        error "Critical vulnerabilities found in container image - build failed"
+                    } */
+                }
             }
         }
         stage ('push') {
             steps {
                 echo 'Pushing the image to dockerhub...'
-                sh 'docker login -u uwinchester -p youdou203'
-                sh 'docker push uwinchester/pfa_app'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PWD'
+                )]) {
+                    sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PWD}"
+                    sh "docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest"
+                    sh "docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+                    sh "docker push ${DOCKER_IMAGE}:latest"
+                }
             }
         }
-
         stage ('deployement') {
             steps {
                 echo 'deploying to tomcat'
@@ -105,7 +158,16 @@ pipeline {
     }
     post {
         always {
+           // Publish Trivy HTML Report
+            publishHTML target: [
+                allowMissing: true,
+                reportDir: '.',
+                reportFiles: 'trivy-report.html',
+                reportName: 'Container Scan (Trivy)',
+                keepAll: true
+            ]
             
+            // Publish ZAP Report 
             publishHTML target: [
                 allowMissing: true,
                 reportDir: './zap-reports/',
@@ -113,6 +175,9 @@ pipeline {
                 reportName: 'zap-reports',
                 keepAll: true
             ]
+
+            // Cleanup Trivy cache 
+            sh "rm -rf ${TRIVY_CACHE_DIR} || true"
         }
     }
 }
