@@ -50,11 +50,7 @@ pipeline {
                 SEMGREP_APP_TOKEN = credentials('SEMGREP_APP_TOKEN')
             }
             steps {
-                sh '''
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip3 install semgrep
-                '''
+                sh 'pip3 install semgrep --break-system-packages'
                 sh 'semgrep ci'
             }
         }
