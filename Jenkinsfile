@@ -1,8 +1,12 @@
 pipeline {
     agent any
     stages {
+        
+            
+                
+            
 
-        }
+        
         stage ('Git Secrets Scanning') {
             tools {
                 maven 'mvn'
@@ -55,10 +59,10 @@ pipeline {
                 echo 'Pushing the image to dockerhub...'
                 withCredentials([usernamePassword(credentialsId: 'jenkins-hub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                 sh "docker login -u $DOCKER_USER -p $DOCKER_PASS"
-                sh 'docker push uwinchester/pfa_app'
+                sh 'docker push uwinchester/pfa_app'}
+            }
         }
-    }
-}
+
 
 
         stage ('deployement') {
