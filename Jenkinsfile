@@ -50,7 +50,7 @@ pipeline {
                 SEMGREP_APP_TOKEN = credentials('SEMGREP_APP_TOKEN')
             }
             steps {
-                sh 'virenv'
+                sh 'source /root/.venv/bin/activate'
                 sh 'pip3 install semgrep'
                 sh 'semgrep ci'
             }
