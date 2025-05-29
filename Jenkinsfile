@@ -99,6 +99,7 @@ pipeline {
             // Run Trivy Scan
             sh """
             trivy --cache-dir ${TRIVY_CACHE_DIR} image \
+                --scanners vuln \
                 --format template \
                 --template "@contrib/html.tpl" \
                 --output trivy-report.html \
