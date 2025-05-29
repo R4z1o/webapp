@@ -76,12 +76,12 @@ pipeline {
                     sh "trivy --cache-dir ${TRIVY_CACHE_DIR} image --download-db-only"
                     
                     // Part C: Run Grype 
-                    sh '''   
+                    /*sh '''   
                         grype ${DOCKER_IMAGE}:${BUILD_NUMBER} > grype-report.txt
                         cat grype-report.txt 
-                    '''
+                    '''  
                     archiveArtifacts 'grype-report.txt'
-                    
+                    */
                     // Part D: Run Trivy Scan 
                     sh """
                         trivy --cache-dir ${TRIVY_CACHE_DIR} image \
