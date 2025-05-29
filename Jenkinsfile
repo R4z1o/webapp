@@ -72,7 +72,7 @@ pipeline {
                 sh 'docker rm -f tomcat-devsecops'
                 sh 'docker rm -f nginx-devsecops'
                 sh 'docker rm -f uwinchester/pfa_app'
-                sh "docker-compose up -d -f docker-compose-waf.yml"
+                sh "docker-compose -f docker-compose-waf.yml up -d"
             }
         }
         stage('DAST~') {
