@@ -68,8 +68,8 @@ pipeline {
             steps {
                 echo 'Building the application...'
                 sh """
-                    docker rmi ${DOCKER_IMAGE}:${BUILD_NUMBER} || true
-                    docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .
+                    docker rmi ${DOCKER_IMAGE}|| true
+                    docker build -t ${DOCKER_IMAGE} .
                     """
             }
         }
@@ -77,7 +77,7 @@ pipeline {
     steps {
         script {
             // Verify image exists locally before scanning
-            sh "docker inspect ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+            sh "docker inspect ${DOCKER_IMAGE}"
             
             // Install Trivy if missing
             sh '''
@@ -99,7 +99,7 @@ pipeline {
                 --severity CRITICAL,HIGH \
                 --ignore-unfixed \
                 --skip-version-check \
-                ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                ${DOCKER_IMAGE}
                 
             trivy --cache-dir ${TRIVY_CACHE_DIR} image \
                 --format json \
@@ -107,7 +107,7 @@ pipeline {
                 --severity CRITICAL,HIGH \
                 --ignore-unfixed \
                 --skip-version-check \
-                ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                ${DOCKER_IMAGE}
             """
             archiveArtifacts 'trivy-report.*'
             
@@ -131,9 +131,7 @@ pipeline {
             passwordVariable: 'DOCKER_PWD'
         )]) {
             sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PWD}"
-            sh "docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest"  // Fixed typo: BUILD_NUMBER
-            sh "docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}"
-            sh "docker push ${DOCKER_IMAGE}:latest"
+            sh 'docker push ${DOCKER_IMAGE}'
         }
     }
 }
