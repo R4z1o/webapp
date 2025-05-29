@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        TRIVY_CACHE_DIR = '/tmp/trivy-cache' 
+        TRIVY_CACHE_DIR = '/var/trivy-cache' 
         DOCKER_IMAGE = 'uwinchester/pfa_app'   
     }
     
