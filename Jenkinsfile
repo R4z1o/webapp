@@ -1,10 +1,6 @@
 pipeline {
     agent any
     stages {
-        stage ('pre-commit hooks'){
-            steps {
-                //talismannnnnnnnnnnnnnn
-            }
 
         }
         stage ('Git Secrets Scanning') {
