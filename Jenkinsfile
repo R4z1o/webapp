@@ -98,31 +98,23 @@ pipeline {
             
             // Run Trivy Scan
             sh """
-            trivy --cache-dir ${TRIVY_CACHE_DIR} image \
-                --scanners vuln \
-                --format template \
-                --template "@contrib/html.tpl" \
-                --output trivy-report.html \
-                --severity CRITICAL,HIGH \
-                --ignore-unfixed \
-                --skip-version-check \
-                ${DOCKER_IMAGE}
-                
-            trivy --cache-dir ${TRIVY_CACHE_DIR} image \
-                --format json \
-                --output trivy-report.json \
-                --severity CRITICAL,HIGH \
-                --ignore-unfixed \
-                --skip-version-check \
+                trivy --cache-dir ${TRIVY_CACHE_DIR} image \\
+                --scanners vuln \\
+                --format table \\
+                --output trivy-report.txt \\
+                --severity CRITICAL,HIGH \\
+                --ignore-unfixed \\
+                --skip-version-check \\
                 ${DOCKER_IMAGE}
             """
-            archiveArtifacts 'trivy-report.*'
+            archiveArtifacts 'trivy-report.txt'
             
             // Critical vulnerability check
             def criticalFound = sh(
-                script: "jq -e '.Results[].Vulnerabilities[] | select(.Severity == \"CRITICAL\")' trivy-report.json",
+                script: "grep -q 'CRITICAL' trivy-report.txt",
                 returnStatus: true
             ) == 0
+
             if (criticalFound) {
                 error "Critical vulnerabilities found in container image"
             }
@@ -175,16 +167,7 @@ pipeline {
         }
     }
     post {
-        always {
-           // Publish Trivy HTML Report
-            publishHTML target: [
-                allowMissing: true,
-                reportDir: '.',
-                reportFiles: 'trivy-report.html',
-                reportName: 'Container Scan (Trivy)',
-                keepAll: true
-            ]
-            
+        always { 
             // Publish ZAP Report 
             publishHTML target: [
                 allowMissing: true,
