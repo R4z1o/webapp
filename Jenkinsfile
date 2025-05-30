@@ -17,13 +17,13 @@ pipeline {
                     cd repo-scan
         
                     echo "[INFO] Installing Talisman"
-                    curl -L https://github.com/thoughtworks/talisman/releases/latest/download/talisman-linux-amd64 -o talisman
+                    curl -L https://github.com/thoughtworks/talisman/releases/download/v1.37.0/talisman_linux_amd64 -o talisman
                     chmod +x talisman
         
                     echo "[INFO] Running Talisman Scan"
-                    ./talisman --scan > ../talisman-report.txt || true  //new
+                    sudo ./talisman --scan
                 '''
-                archiveArtifacts allowEmptyArchive: true, artifacts: 'talisman-report.txt', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
+                archiveArtifacts 'talisman_report/talisman_reports/data/report.json'
             }
         }
 
