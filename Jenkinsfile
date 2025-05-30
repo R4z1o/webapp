@@ -8,6 +8,33 @@ pipeline {
     }
     
     stages {
+        stage('Talisman Secret Scan') {
+            steps {
+                script {
+                    echo 'Running Talisman secret scan'
+                    sh '''
+                        # Install Talisman if not present
+                        if ! command -v talisman &> /dev/null; then
+                            curl -s https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/install.bash > install_talisman.bash
+                            chmod +x install_talisman.bash
+                            ./install_talisman.bash
+                        fi
+                        
+                        # Run Talisman scan
+                        talisman --scanWithHtml
+                        
+                        # Archive the report
+                        mkdir -p talisman-reports
+                        mv talisman_report.html talisman-reports/
+                    '''
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts 'talisman-reports/talisman_report.html'
+                }
+            }
+        }
         stage ('OWASP-dependency-check') {
             steps {
                 echo 'dependency check using OWASP'
