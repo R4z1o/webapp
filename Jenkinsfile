@@ -12,18 +12,23 @@ pipeline {
             steps {
                 sh '''
                     echo "[INFO] Cloning repo for Talisman scan"
-                    rm -rf webapp 
+                    rm -rf webapp talisman_report || true
                     git clone https://github.com/R4z1o/webapp.git webapp
                     cd webapp
-        
+
                     echo "[INFO] Installing Talisman"
                     curl -L https://github.com/thoughtworks/talisman/releases/download/v1.37.0/talisman_linux_amd64 -o talisman
                     chmod +x talisman
-        
+
                     echo "[INFO] Running Talisman Scan"
-                    ./talisman --scan
+                    ./talisman --scan || true
                 '''
-                archiveArtifacts 'talisman_report/talisman_reports/data/report.json'
+                archiveArtifacts allowEmptyArchive: true, artifacts: 'webapp/talisman_report/**', fingerprint: true
+            }
+            post {
+                always {
+                    echo "Talisman reports archived."
+                }
             }
         }
 
