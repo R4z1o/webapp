@@ -13,7 +13,11 @@ pipeline {
                 sh '''
                     # Install Talisman if not already installed
                     if ! command -v talisman &> /dev/null; then
-                        curl -Lo talisman https://github.com/thoughtworks/talisman/releases/latest/download/talisman-linux-amd64
+                        curl -s https://api.github.com/repos/thoughtworks/talisman/releases/latest \
+                        | grep "browser_download_url" \
+                        | grep "talisman-linux-amd64" \
+                        | cut -d '"' -f 4 \
+                        | wget -i - -O talisman
                         chmod +x talisman
                         sudo mv talisman /usr/local/bin/
                     fi
