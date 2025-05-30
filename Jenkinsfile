@@ -12,9 +12,9 @@ pipeline {
             steps {
                 sh '''
                     echo "[INFO] Cloning repo for Talisman scan"
-                    rm -rf repo-scan || true
-                    git clone https://github.com/R4z1o/webapp.git repo-scan
-                    cd repo-scan
+                    rm -rf webapp || true
+                    git clone https://github.com/R4z1o/webapp.git webapp
+                    cd webapp
         
                     echo "[INFO] Installing Talisman"
                     curl -L https://github.com/thoughtworks/talisman/releases/download/v1.37.0/talisman_linux_amd64 -o talisman
