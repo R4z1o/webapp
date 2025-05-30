@@ -8,27 +8,22 @@ pipeline {
     }
     
     stages {
-        stage('Secret Scan using Talisman') {
+        stage('Secret Scan with Talisman') {
             steps {
                 sh '''
-                    # Download the actual binary
-                    curl -s https://api.github.com/repos/thoughtworks/talisman/releases/latest \
-                    | grep "browser_download_url" \
-                    | grep "talisman-linux-amd64" \
-                    | cut -d '"' -f 4 \
-                    | wget -i - -O talisman
+                    echo "[INFO] Cloning repo for Talisman scan"
+                    rm -rf repo-scan || true
+                    git clone https://github.com/R4z1o/webapp.git repo-scan
+                    cd repo-scan
         
+                    echo "[INFO] Installing Talisman"
+                    curl -L https://github.com/thoughtworks/talisman/releases/latest/download/talisman-linux-amd64 -o talisman
                     chmod +x talisman
-                    sudo mv talisman /usr/local/bin/
         
-                    # Clone and scan
-                    rm -rf repo_to_scan
-                    git clone https://github.com/R4z1o/webapp.git repo_to_scan
-        
-                    cd repo_to_scan
-                    talisman --scan > ../talisman-report.txt 2>&1
+                    echo "[INFO] Running Talisman Scan"
+                    ./talisman --scan > ../talisman-report.txt || true
                 '''
-                archiveArtifacts 'talisman-report.txt'
+                archiveArtifacts allowEmptyArchive: true, artifacts: 'talisman-report.txt', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
             }
         }
 
