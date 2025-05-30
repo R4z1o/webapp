@@ -104,15 +104,19 @@ pipeline {
             
             // Run Trivy Scan
             sh """
-                trivy --cache-dir ${TRIVY_CACHE_DIR} image \\
-                --scanners vuln \\
-                --format json \\
-                --output trivy-report.json \\
-                --severity CRITICAL,HIGH \\
-                --ignore-unfixed \\
-                --skip-version-check \\
-                ${DOCKER_IMAGE}
+                mkdir -p ${TRIVY_CACHE_DIR}/tmp
+            
+                TMPDIR=${TRIVY_CACHE_DIR}/tmp trivy \\
+                    --cache-dir ${TRIVY_CACHE_DIR} image \\
+                    --scanners vuln \\
+                    --format json \\
+                    --output trivy-report.json \\
+                    --severity CRITICAL,HIGH \\
+                    --ignore-unfixed \\
+                    --skip-version-check \\
+                    ${DOCKER_IMAGE}
             """
+
             archiveArtifacts 'trivy-report.json'
             
             // Critical vulnerability check
