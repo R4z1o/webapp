@@ -11,25 +11,24 @@ pipeline {
         stage('Secret Scan using Talisman') {
             steps {
                 sh '''
-                    # Install Talisman if not already installed
-                    if ! command -v talisman &> /dev/null; then
-                        curl -s https://api.github.com/repos/thoughtworks/talisman/releases/latest \
-                        | grep "browser_download_url" \
-                        | grep "talisman-linux-amd64" \
-                        | cut -d '"' -f 4 \
-                        | wget -i - -O talisman
-                        chmod +x talisman
-                        sudo mv talisman /usr/local/bin/
-                    fi
+                    # Download the actual binary
+                    curl -s https://api.github.com/repos/thoughtworks/talisman/releases/latest \
+                    | grep "browser_download_url" \
+                    | grep "talisman-linux-amd64" \
+                    | cut -d '"' -f 4 \
+                    | wget -i - -O talisman
         
-                    # Clone the repository fresh (recommended to scan all files)
+                    chmod +x talisman
+                    sudo mv talisman /usr/local/bin/
+        
+                    # Clone and scan
                     rm -rf repo_to_scan
                     git clone https://github.com/R4z1o/webapp.git repo_to_scan
         
-                    # Run talisman scan
                     cd repo_to_scan
-                    talisman --scan
+                    talisman --scan > ../talisman-report.txt 2>&1
                 '''
+                archiveArtifacts 'talisman-report.txt'
             }
         }
 
