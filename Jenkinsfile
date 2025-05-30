@@ -21,7 +21,7 @@ pipeline {
                     chmod +x talisman
         
                     echo "[INFO] Running Talisman Scan"
-                    ./talisman --scan > ../talisman-report.txt || true  //new thing ddsd
+                    ./talisman --scan > ../talisman-report.txt || true  //new
                 '''
                 archiveArtifacts allowEmptyArchive: true, artifacts: 'talisman-report.txt', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
             }
