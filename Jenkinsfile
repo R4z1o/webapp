@@ -45,7 +45,7 @@ pipeline {
                 }
             }
         }
-        */
+        
 
         stage('Semgrep-Scan') {
             steps {
@@ -60,7 +60,7 @@ pipeline {
                 }
             }
         }
-
+*/
         stage('Generate SBOM') {  
             steps {  
                 sh '''  
@@ -106,14 +106,14 @@ pipeline {
             sh """
                 trivy --cache-dir ${TRIVY_CACHE_DIR} image \\
                 --scanners vuln \\
-                --format table \\
-                --output trivy-report.txt \\
+                --format json \\
+                --output trivy-report.json \\
                 --severity CRITICAL,HIGH \\
                 --ignore-unfixed \\
                 --skip-version-check \\
                 ${DOCKER_IMAGE}
             """
-            archiveArtifacts 'trivy-report.txt'
+            archiveArtifacts 'trivy-report.json'
             
             // Critical vulnerability check
             def criticalFound = sh(
