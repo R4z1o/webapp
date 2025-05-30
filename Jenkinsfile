@@ -8,33 +8,27 @@ pipeline {
     }
     
     stages {
-        stage('Talisman Secret Scan') {
+        stage('Secret Scan using Talisman') {
             steps {
-                script {
-                    echo 'Running Talisman secret scan'
-                    sh '''
-                        # Install Talisman if not present
-                        if ! command -v talisman &> /dev/null; then
-                            curl -s https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/install.bash > install_talisman.bash
-                            chmod +x install_talisman.bash
-                            ./install_talisman.bash
-                        fi
-                        
-                        # Run Talisman scan
-                        talisman --scanWithHtml
-                        
-                        # Archive the report
-                        mkdir -p talisman-reports
-                        mv talisman_report.html talisman-reports/
-                    '''
-                }
-            }
-            post {
-                always {
-                    archiveArtifacts 'talisman-reports/talisman_report.html'
-                }
+                sh '''
+                    # Install Talisman if not already installed
+                    if ! command -v talisman &> /dev/null; then
+                        curl -Lo talisman https://github.com/thoughtworks/talisman/releases/latest/download/talisman-linux-amd64
+                        chmod +x talisman
+                        sudo mv talisman /usr/local/bin/
+                    fi
+        
+                    # Clone the repository fresh (recommended to scan all files)
+                    rm -rf repo_to_scan
+                    git clone https://github.com/R4z1o/webapp.git repo_to_scan
+        
+                    # Run talisman scan
+                    cd repo_to_scan
+                    talisman --scan
+                '''
             }
         }
+
         stage ('OWASP-dependency-check') {
             steps {
                 echo 'dependency check using OWASP'
