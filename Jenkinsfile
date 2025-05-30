@@ -12,7 +12,7 @@ pipeline {
             steps {
                 sh '''
                     echo "[INFO] Cloning repo for Talisman scan"
-                    rm -rf webapp || true
+                    rm -rf webapp 
                     git clone https://github.com/R4z1o/webapp.git webapp
                     cd webapp
         
@@ -21,7 +21,7 @@ pipeline {
                     chmod +x talisman
         
                     echo "[INFO] Running Talisman Scan"
-                    sudo ./talisman --scan
+                    ./talisman --scan
                 '''
                 archiveArtifacts 'talisman_report/talisman_reports/data/report.json'
             }
