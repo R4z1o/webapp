@@ -1,12 +1,6 @@
 pipeline {
     agent any
     stages {
-        
-            
-                
-            
-
-        
         stage ('Git Secrets Scanning') {
             tools {
                 maven 'mvn'
@@ -36,8 +30,6 @@ pipeline {
 
         }
 
-
-        
         stage ('build') {
             steps {
                 echo 'Building the application...'
@@ -67,12 +59,12 @@ pipeline {
 
         stage ('deployement') {
             steps {
-                echo 'deploying to tomcat'
+                echo 'deploying for testing'
                 sh 'docker-compose down --rmi local --volumes --remove-orphans || true'
                 sh 'docker rm -f tomcat-devsecops'
                 sh 'docker rm -f nginx-devsecops'
                 sh 'docker rm -f uwinchester/pfa_app'
-                sh "docker-compose -f docker-compose-waf.yml up -d"
+                sh "docker-compose -f docker-compose.yml up -d"
             }
         }
         stage('DAST~') {
@@ -98,8 +90,12 @@ pipeline {
         }
         stage ('WAF'){
             steps{
-                sh 'docker pull uwinchester/pfa_app'
-                sh ''
+                echo 'deployment'
+                sh 'docker-compose down --rmi local --volumes --remove-orphans || true'
+                sh 'docker rm -f tomcat-devsecops-waf'
+                sh 'docker rm -f nginx-devsecops-waf'
+                sh 'docker rm -f uwinchester/pfa_app'
+                sh "docker-compose -f docker-compose-waf.yml up -d"
             }
         }
     }

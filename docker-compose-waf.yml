@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   tomcat:
     image: uwinchester/pfa_app  
@@ -10,15 +8,16 @@ services:
       - devsecops-net
 
   nginx:
-    image: owasp/modsecurity-crs:nginx-alpine  
+    image: owasp/modsecurity-crs:4.14.0-nginx-alpine-202505250105
     container_name: nginx-devsecops
     depends_on:
       - tomcat
     volumes:
-      - ./nginx-modsec.conf:/etc/nginx/nginx.conf          
-      - ./modsecurity.conf:/etc/nginx/modsecurity.conf  
+      - ./default.conf:/etc/nginx/templates/conf.d/default.conf.template
+      - ./setup.conf:/etc/nginx/templates/modsecurity.d/setup.conf.template
+      - ./modsecurity.conf:/etc/nginx/templates/conf.d/modsecurity.conf.template
     ports:
-      - "80:80"
+      - "80:80"  
     networks:
       - devsecops-net
 
