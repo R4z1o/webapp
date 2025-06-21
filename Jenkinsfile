@@ -61,7 +61,7 @@ pipeline {
                 sh 'cat trufflehog'
             }
         }
-
+        /*
         stage('SonarQube Analysis') {
             steps{
                 withSonarQubeEnv(installationName: 'sonarQube') {
@@ -70,7 +70,8 @@ pipeline {
             }
         }
         
-        /*
+        */
+        
         stage('Semgrep-Scan') {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
@@ -84,7 +85,7 @@ pipeline {
                 }
             }
         }
-*/
+
         stage('Generate SBOM') {  
             steps {  
                 sh '''  
