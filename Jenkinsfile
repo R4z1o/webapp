@@ -1,14 +1,8 @@
 pipeline {
-    agent {
-        docker {
-            image 'ubuntu:22.04'
-            label 'docker-enabled-agent'
-            args '-u root'  // optional: run as root
-        }
-    }
+    agent any
 
     environment {
-        TRIVY_CACHE_DIR = '/var/trivy-cache' 
+        TRIVY_CACHE_DIR = '/tmp/trivy-cache' 
         DOCKER_IMAGE = 'uwinchester/pfa_app'
         SEMGREP_APP_TOKEN = credentials('SEMGREP_APP_TOKEN')  
     }
