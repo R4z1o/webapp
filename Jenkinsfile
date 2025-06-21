@@ -62,7 +62,7 @@ pipeline {
             }
         }
 
-        /*stage('SonarQube Analysis') {
+        stage('SonarQube Analysis') {
             steps{
                 withSonarQubeEnv(installationName: 'sonarQube') {
                   sh "mvn clean verify sonar:sonar -Dsonar.projectKey=jenkinsPipeline -Dsonar.projectName='jenkinsPipeline'"
@@ -70,7 +70,7 @@ pipeline {
             }
         }
         
-
+        /*
         stage('Semgrep-Scan') {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
