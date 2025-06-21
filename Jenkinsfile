@@ -1,5 +1,11 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'ubuntu:22.04'
+            label 'docker-enabled-agent'
+            args '-u root'  // optional: run as root
+        }
+    }
 
     environment {
         TRIVY_CACHE_DIR = '/var/trivy-cache' 
