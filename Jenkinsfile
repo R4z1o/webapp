@@ -171,11 +171,11 @@ pipeline {
         stage ('deployement') {
             steps {
                 echo 'deploying to tomcat'
-                sh 'docker-compose down --rmi local --volumes --remove-orphans || true'
+                sh 'docker compose down --rmi local --volumes --remove-orphans || true'
                 sh 'docker rm -f tomcat-devsecops'
                 sh 'docker rm -f nginx-devsecops'
                 sh 'docker rm -f uwinchester/pfa_app'
-                sh "docker-compose up -d"
+                sh "docker compose up -d"
             }
         }
         stage('DAST~') {
