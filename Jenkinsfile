@@ -104,7 +104,7 @@ pipeline {
                     """
             }
         }
-    stage('Container Scan') {
+    stage('Infrastructure as a Code (IaaC) Scanning') {
     steps {
         script {
 
