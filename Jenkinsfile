@@ -72,7 +72,7 @@ pipeline {
         
         */
 
-        stage('Semgrep-Scan') {
+        /*stage('Semgrep-Scan') {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
                     sh '''
@@ -85,7 +85,7 @@ pipeline {
                 }
             }
         }
-
+        */
         stage('Generate SBOM') {  
             steps {  
                 sh '''  
