@@ -1,0 +1,69 @@
+services:
+  tomcat:
+    image: uwinchester/pfa_app  
+    container_name: tomcat-devsecops-waf
+    ports:
+      - "8080"  
+    networks:
+      - devsecops-net
+
+  nginx:
+    image: owasp/modsecurity-crs:4.14.0-nginx-alpine-202505250105
+    container_name: nginx-devsecops-waf
+    depends_on:
+      - tomcat
+    volumes:
+      - ./default.conf:/etc/nginx/templates/conf.d/default.conf.template
+      - ./setup.conf:/etc/nginx/templates/modsecurity.d/setup.conf.template
+      - ./modsecurity.conf:/etc/nginx/templates/conf.d/modsecurity.conf.template
+      - modsec-logs:/tmp
+    ports:
+      - "80:80"  
+    networks:
+      - devsecops-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - devsecops-net
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - devsecops-net
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.0
+    container_name: logstash
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - modsec-logs:/tmp
+    ports:
+      - "5044:5044"
+    networks:
+      - devsecops-net
+
+volumes:
+  esdata:
+  modsec-logs:
+
+networks:
+  devsecops-net:
+    driver: bridge

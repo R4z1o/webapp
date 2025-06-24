@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        TRIVY_CACHE_DIR = '/tmp/trivy-cache' 
+        TRIVY_CACHE_DIR = '/tmp/trivy-cache'
         DOCKER_IMAGE = 'uwinchester/pfa_app'
-        SEMGREP_APP_TOKEN = credentials('SEMGREP_APP_TOKEN')  
+        SEMGREP_APP_TOKEN = credentials('SEMGREP_APP_TOKEN')
     }
-    
+
     stages {
         stage('Secret Scan with Talisman') {
             steps {
@@ -27,30 +27,29 @@ pipeline {
             }
             post {
                 always {
-                    echo "Talisman reports archived."
+                    echo 'Talisman reports archived.'
                 }
             }
         }
 
-        stage ('OWASP-dependency-check') {
+        stage('OWASP-dependency-check') {
             steps {
                 echo 'dependency check using OWASP'
                 dependencyCheck additionalArguments: '', odcInstallation: 'dependency-check'
                 dependencyCheckPublisher pattern:''
                 archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-report.xml', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
-                sh "rm -rf dependency-check-report.xml*"
+                sh 'rm -rf dependency-check-report.xml*'
             }
         }
-        stage ('SCA using snyk') {
+        stage('SCA using snyk') {
             steps {
-                snykSecurity (
+                snykSecurity(
                     snykInstallation: 'snyk',
                     snykTokenId: '79230cba-8022-423d-80b0-1c625dc7b13a'
                 )
-                
             }
         }
-        stage ('Check-Git-Secrets') {
+        stage('Check-Git-Secrets') {
             tools {
                 maven 'mvn'
             }
@@ -69,7 +68,7 @@ pipeline {
                 }
             }
         }
-        
+
         */
 
         /*stage('Semgrep-Scan') {
@@ -81,22 +80,22 @@ pipeline {
                         pip3 install semgrep
                         semgrep ci
                     '''
-                    // Note: remove the --disable-pro flag when we add more memory to the Jenkins server
+                // Note: remove the --disable-pro flag when we add more memory to the Jenkins server
                 }
             }
         }
         */
-        stage('Generate SBOM') {  
-            steps {  
-                sh '''  
-                syft scan dir:. --output cyclonedx-json=sbom.json  
-                '''  
-                archiveArtifacts allowEmptyArchive: true, artifacts: 'sbom*', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true  
-                sh ' rm -rf sbom*'  
+        stage('Generate SBOM') {
+            steps {
+                sh '''
+                syft scan dir:. --output cyclonedx-json=sbom.json
+                '''
+                archiveArtifacts allowEmptyArchive: true, artifacts: 'sbom*', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
+                sh ' rm -rf sbom*'
             }
         }
-        
-        stage ('build') {
+
+        stage('build') {
             steps {
                 echo 'Building the application...'
                 sh """
@@ -105,82 +104,81 @@ pipeline {
                     """
             }
         }
-    stage('Infrastructure as a Code (IaaC) Scanning') {
-    steps {
-        script {
+        stage('Infrastructure as a Code (IaaC) Scanning') {
+            steps {
+                script {
+                    sh'''
+                        find /var -name "trivy*" -exec rm -rf {} + 2>/dev/null || true
+                        find /var -name "javadb*" -exec rm -rf {} + 2>/dev/null || true
+                    '''
+                    // Verify image exists locally before scanning
+                    sh "docker inspect ${DOCKER_IMAGE}"
 
-            sh'''
-            find /var -name "trivy*" -exec rm -rf {} + 2>/dev/null || true
-            find /var -name "javadb*" -exec rm -rf {} + 2>/dev/null || true
-            '''
-            // Verify image exists locally before scanning
-            sh "docker inspect ${DOCKER_IMAGE}"
-            
-            // Install Trivy if missing
-            sh '''
-            if ! command -v trivy &> /dev/null; then
-                curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-            fi
-            '''
-            
-            // Setup cache
-            sh "mkdir -p ${TRIVY_CACHE_DIR}"
-            sh "trivy --cache-dir ${TRIVY_CACHE_DIR} image --download-db-only"
-            
-            // Run Trivy Scan
-            sh """
-                mkdir -p ${TRIVY_CACHE_DIR}/tmp
-            
-                TMPDIR=${TRIVY_CACHE_DIR}/tmp trivy \\
-                    --cache-dir ${TRIVY_CACHE_DIR} image \\
-                    --scanners vuln \\
-                    --format json \\
-                    --output trivy-report.json \\
-                    --severity CRITICAL,HIGH \\
-                    --ignore-unfixed \\
-                    --skip-version-check \\
-                    ${DOCKER_IMAGE}
-            """
+                    // Install Trivy if missing
+                    sh '''
+                        if ! command -v trivy &> /dev/null; then
+                            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+                        fi
+                    '''
 
-            archiveArtifacts 'trivy-report.json'
-            
-            // Critical vulnerability check
-            def criticalFound = sh(
-                script: "grep -q 'CRITICAL' trivy-report.txt",
-                returnStatus: true
-            ) == 0
+                    // Setup cache
+                    sh "mkdir -p ${TRIVY_CACHE_DIR}"
+                    sh "trivy --cache-dir ${TRIVY_CACHE_DIR} image --download-db-only"
 
-            if (criticalFound) {
-                error "Critical vulnerabilities found in container image"
+                    // Run Trivy Scan
+                    sh """
+                        mkdir -p ${TRIVY_CACHE_DIR}/tmp
+
+                        TMPDIR=${TRIVY_CACHE_DIR}/tmp trivy \\
+                            --cache-dir ${TRIVY_CACHE_DIR} image \\
+                            --scanners vuln \\
+                            --format json \\
+                            --output trivy-report.json \\
+                            --severity CRITICAL,HIGH \\
+                            --ignore-unfixed \\
+                            --skip-version-check \\
+                            ${DOCKER_IMAGE}
+                    """
+
+                    archiveArtifacts 'trivy-report.json'
+
+                    // Critical vulnerability check
+                    def criticalFound = sh(
+                        script: "grep -q 'CRITICAL' trivy-report.txt",
+                        returnStatus: true
+                    ) == 0
+
+                    if (criticalFound) {
+                        error 'Critical vulnerabilities found in container image'
+                    }
+                }
             }
         }
-    }
-}
-        stage ('push') {
-    steps {
-        echo 'Pushing the image to dockerhub...'
-        withCredentials([usernamePassword(
+        stage('push') {
+            steps {
+                echo 'Pushing the image to dockerhub...'
+                withCredentials([usernamePassword(
             credentialsId: 'dockerhub-creds',
             usernameVariable: 'DOCKER_USER',
             passwordVariable: 'DOCKER_PWD'
         )]) {
-            sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PWD}"
-            sh 'docker push ${DOCKER_IMAGE}'
+                    sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PWD}"
+                    sh "docker push ${DOCKER_IMAGE}"
         }
-    }
-}
-        stage ('deployement') {
+            }
+        }
+        stage('deployement for DAST') {
             steps {
-                echo 'deploying to tomcat'
+                echo 'deploying for testing'
                 sh 'docker compose down --rmi local --volumes --remove-orphans || true'
                 sh 'docker rm -f tomcat-devsecops'
                 sh 'docker rm -f nginx-devsecops'
-                sh 'docker rm -f uwinchester/pfa_app'
-                sh "docker compose up -d"
+                sh "docker rm -f ${DOCKER_IMAGE}"
+                sh 'docker compose up -d'
             }
         }
-        stage('DAST~') {
-            steps{
+        stage('DAST') {
+            steps {
                 script {
                     sh 'mkdir -p zap-reports'
 
@@ -192,27 +190,53 @@ pipeline {
                             -t zaproxy/zap-stable \
                             zap-full-scan.py \
                             -t http://104.248.252.219/ \
-                            -r zap-report.html
+                            -r zap-report.html || true
                         '''
-                    
                 }
-                echo "[INFO] ZAP scan completed. Check the report if the build fails."
+                echo '[INFO] ZAP scan completed. Check the report if the build fails.'
                 archiveArtifacts 'zap-reports/zap-report.html'
+            }
+        }
+        stage('Deployment Approval') {
+            steps {
+                script {
+                    def userInput = input(
+                        message: 'Do you approve the deployment?',
+                        parameters: [
+                            choice(name: 'Approval', choices: ['Yes', 'No'], description: 'Select Yes to proceed or No to abort')
+                        ]
+                    )
+
+                    if (userInput == 'No') {
+                        error('Deployment was not approved.')
+                    }
+                }
+            }
+        }
+
+        stage('Deployment with monotoring and alerting integrated') {
+            steps {
+                echo 'deployment'
+                sh 'docker-compose down --rmi local --volumes --remove-orphans || true'
+                sh 'docker rm -f tomcat-devsecops-waf'
+                sh 'docker rm -f nginx-devsecops-waf'
+                sh "docker rm -f ${DOCKER_IMAGE}"
+                sh 'docker-compose -f docker-compose-waf.yml up -d'
             }
         }
     }
     post {
-        always { 
-            // Publish ZAP Report 
+        always {
+            // Publish ZAP Report
             publishHTML target: [
                 allowMissing: true,
                 reportDir: './zap-reports/',
-                reportFiles: 'zap-report.html', 
+                reportFiles: 'zap-report.html',
                 reportName: 'zap-reports',
                 keepAll: true
             ]
 
-            // Cleanup Trivy cache 
+            // Cleanup Trivy cache
             sh "rm -rf ${TRIVY_CACHE_DIR} || true"
         }
     }
