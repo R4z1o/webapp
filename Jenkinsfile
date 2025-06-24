@@ -170,11 +170,11 @@ pipeline {
         stage('deployement for DAST') {
             steps {
                 echo 'deploying for testing'
-                sh 'docker compose down --rmi local --volumes --remove-orphans || true'
+                sh 'docker-compose down --rmi local --volumes --remove-orphans || true'
                 sh 'docker rm -f tomcat-devsecops'
                 sh 'docker rm -f nginx-devsecops'
                 sh "docker rm -f ${DOCKER_IMAGE}"
-                sh 'docker compose up -d'
+                sh 'docker-compose -f docker-compose.yml up -d'
             }
         }
         stage('DAST') {
