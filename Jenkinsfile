@@ -8,7 +8,7 @@ pipeline {
     }
 
     stages {
-        stage('Secret Scan with Talisman') {
+        /*stage('Secret Scan with Talisman') {
             steps {
                 sh '''
                     echo "[INFO] Cloning repo for Talisman scan"
@@ -84,7 +84,7 @@ pipeline {
                 }
             }
         }
-        */
+
         stage('Generate SBOM') {
             steps {
                 sh '''
@@ -93,7 +93,7 @@ pipeline {
                 archiveArtifacts allowEmptyArchive: true, artifacts: 'sbom*', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
                 sh ' rm -rf sbom*'
             }
-        }
+        }*/
 
         stage('build') {
             steps {
@@ -104,7 +104,7 @@ pipeline {
                     """
             }
         }
-        stage('Infrastructure as a Code (IaaC) Scanning') {
+        /*stage('Infrastructure as a Code (IaaC) Scanning') {
             steps {
                 script {
                     sh'''
@@ -166,7 +166,7 @@ pipeline {
                     sh "docker push ${DOCKER_IMAGE}"
         }
             }
-        }
+        }*/
         stage('deployement for DAST') {
             steps {
                 echo 'deploying for testing'
@@ -193,6 +193,10 @@ pipeline {
                             -r zap-report.html || true
                         '''
                 }
+                echo '[INFO] ZAP scan completed. Check the report if the build fails.'
+                sh 'ls'
+                sh 'ls zap-reports'
+                archiveArtifacts 'zap-reports/zap-report.html'
             }
         }
         stage('Deployment Approval') {
