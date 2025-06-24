@@ -185,12 +185,12 @@ pipeline {
                     sh '''
                         docker pull zaproxy/zap-stable
                         docker run --rm \
-                            -v "$WORKSPACE/zap-reports:/zap/" \
+                            -v "$WORKSPACE/zap-reports:/zap/wrk" \
                             -u $(id -u):$(id -g) \
                             -t zaproxy/zap-stable \
                             zap-full-scan.py \
                             -t http://104.248.252.219/ \
-                            -r zap-report.html || true
+                            -r zap-report.html
                         '''
                 }
                 echo '[INFO] ZAP scan completed. Check the report if the build fails.'
