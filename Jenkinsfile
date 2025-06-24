@@ -180,7 +180,7 @@ pipeline {
         stage('DAST') {
             steps {
                 script {
-                    sh "mkdir -p $WORKSPACE/zap-reports"
+                    sh 'mkdir -p zap-reports'
 
                     sh '''
                         docker pull zaproxy/zap-stable
@@ -190,11 +190,11 @@ pipeline {
                             -t zaproxy/zap-stable \
                             zap-full-scan.py \
                             -t http://104.248.252.219/ \
-                            -r zap-report.html || true
+                            -r /zap/wrk/zap-report.html || true
                         '''
                 }
                 echo '[INFO] ZAP scan completed. Check the report if the build fails.'
-                archiveArtifacts "$WORKSPACE/zap-reports/zap-report.html"
+                archiveArtifacts 'zap-reports/zap-report.html'
             }
         }
         stage('Deployment Approval') {
