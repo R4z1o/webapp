@@ -189,7 +189,7 @@ pipeline {
                             -u $(id -u):$(id -g) \
                             -t zaproxy/zap-stable \
                             zap-full-scan.py \
-                            -t http://104.248.252.219/ \
+                            -t http://104.248.252.219:8888/ \
                             -r zap-report.html || true
                         '''
                 }
