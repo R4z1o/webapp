@@ -180,7 +180,7 @@ pipeline {
         stage('DAST') {
             steps {
                 script {
-                    sh 'mkdir -p zap-reports'
+                    sh "mkdir -p $WORKSPACE/zap-reports"
 
                     sh '''
                         docker pull zaproxy/zap-stable
