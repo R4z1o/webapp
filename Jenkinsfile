@@ -185,7 +185,7 @@ pipeline {
                     sh '''
                         docker pull zaproxy/zap-stable
                         docker run --rm \
-                            -v "$WORKSPACE/zap-reports:/zap/wrk" \
+                            -v "$WORKSPACE/zap-reports:/zap/" \
                             -u $(id -u):$(id -g) \
                             -t zaproxy/zap-stable \
                             zap-full-scan.py \
