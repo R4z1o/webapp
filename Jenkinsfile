@@ -190,7 +190,7 @@ pipeline {
                             -t zaproxy/zap-stable \
                             zap-full-scan.py \
                             -t http://104.248.252.219/ \
-                            -r /zap/wrk/zap-report.html || true
+                            -r zap-report.html || true
                         '''
                 }
                 echo '[INFO] ZAP scan completed. Check the report if the build fails.'
