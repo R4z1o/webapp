@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Secret Scan with Talisman') {
             steps {
-                sh '''
+                sh '''#!/bin/bash
                     echo "[INFO] Cloning repo for Talisman scan"
                     rm -rf webapp talisman_report || true
                     git clone https://github.com/R4z1o/webapp.git webapp
@@ -17,70 +17,65 @@ pipeline {
                     mkdir -p talisman_report
                     ./talisman --scan || true
                     
-                    # Create HTML report with table format
-                    echo "<html>
-                    <head>
-                        <title>Talisman Scan Report</title>
-                        <style>
-                            body { font-family: Arial, sans-serif; margin: 20px; }
-                            h1 { color: #333; }
-                            table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-                            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                            th { background-color: #f2f2f2; }
-                            tr:nth-child(even) { background-color: #f9f9f9; }
-                            .high { background-color: #ffcccc; }
-                            .medium { background-color: #ffe6cc; }
-                            .low { background-color: #ffffcc; }
-                            .summary { margin-bottom: 20px; }
-                        </style>
-                    </head>
-                    <body>
-                    <h1>Talisman Secret Scan Report</h1>" > talisman_report.html
-        
-                    # Add summary section
-                    echo "<div class='summary'>
-                        <h2>Scan Summary</h2>
-                        <p>File Content Issues: 373</p>
-                        <p>Filename Issues: 2</p>
-                        <p>Filesize Issues: 0</p>
-                        <p>Warnings: 0</p>
-                        <p>Ignored: 0</p>
-                    </div>" >> talisman_report.html
-        
-                    # Start results table
-                    echo "<table>
-                        <tr>
-                            <th>File</th>
-                            <th>Issue Type</th>
-                            <th>Severity</th>
-                            <th>Message</th>
-                            <th>Commits</th>
-                        </tr>" >> talisman_report.html
+                    # Create HTML report
+                    cat << 'EOF' > talisman_report.html
+        <html>
+        <head>
+            <title>Talisman Scan Report</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                h1 { color: #333; }
+                table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                tr:nth-child(even) { background-color: #f9f9f9; }
+                .high { background-color: #ffcccc; }
+                .medium { background-color: #ffe6cc; }
+                .low { background-color: #ffffcc; }
+                .summary { margin-bottom: 20px; }
+            </style>
+        </head>
+        <body>
+        <h1>Talisman Secret Scan Report</h1>
+        <div class='summary'>
+            <h2>Scan Summary</h2>
+            <p>File Content Issues: 373</p>
+            <p>Filename Issues: 2</p>
+            <p>Filesize Issues: 0</p>
+            <p>Warnings: 0</p>
+            <p>Ignored: 0</p>
+        </div>
+        <table>
+            <tr>
+                <th>File</th>
+                <th>Issue Type</th>
+                <th>Severity</th>
+                <th>Message</th>
+                <th>Commits</th>
+            </tr>
+        EOF
         
                     # Process the JSON report and convert to table rows
                     if [ -d "talisman_report/talisman_reports/data" ]; then
                         # Find all JSON files in the report directory
                         for report_file in $(find talisman_report/talisman_reports/data -name "*.json"); do
                             # Use jq to parse JSON and create table rows
-                            filename=$(jq -r '.filename' $report_file)
-                            
-                            # Process failure_list
                             jq -r '.failure_list[] | 
-                                "<tr class=\"" + .severity + "\">
+                                "<tr class=\\\"" + .severity + "\\\">
                                     <td>" + .filename + "</td>
                                     <td>" + .type + "</td>
                                     <td>" + .severity + "</td>
-                                    <td>" + (.message | gsub("\""; "'")) + "</td>
+                                    <td>" + (.message | gsub("\\""; "\\\'")) + "</td>
                                     <td>" + (.commits | join(", ")[0:50] + (if (.commits | length) > 1 then "..." else "" end)) + "</td>
                                 </tr>"' $report_file >> talisman_report.html
                             
                             # Process warning_list (if any)
                             jq -r '.warning_list[] | 
-                                "<tr class=\"low\">
+                                "<tr class=\\\"low\\\">
                                     <td>" + .filename + "</td>
                                     <td>" + .type + "</td>
                                     <td>warning</td>
-                                    <td>" + (.message | gsub("\""; "'")) + "</td>
+                                    <td>" + (.message | gsub("\\""; "\\\'")) + "</td>
                                     <td>" + (.commits | join(", ")[0:50] + (if (.commits | length) > 1 then "..." else "" end)) + "</td>
                                 </tr>"' $report_file >> talisman_report.html
                         done
@@ -91,6 +86,7 @@ pipeline {
                     # Close table and HTML
                     echo "</table></body></html>" >> talisman_report.html
         
+                    mkdir -p talisman_report
                     mv talisman_report.html talisman_report/
                 '''
                 archiveArtifacts allowEmptyArchive: true, artifacts: 'webapp/talisman_report/**', fingerprint: true
