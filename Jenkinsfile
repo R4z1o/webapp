@@ -22,6 +22,13 @@ pipeline {
 
                     echo "[INFO] Running Talisman Scan"
                     ./talisman --scan || true
+
+                    echo "<html><body><pre>" > talisman_report.html
+                    cat talisman_report.txt >> talisman_report.html
+                    echo "</pre></body></html>" >> talisman_report.html
+
+                    mkdir -p talisman_report
+                    mv talisman_report.* talisman_report/
                 '''
                 archiveArtifacts allowEmptyArchive: true, artifacts: 'webapp/talisman_report/**', fingerprint: true
             }
