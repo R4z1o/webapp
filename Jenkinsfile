@@ -5,6 +5,11 @@ pipeline {
             steps {
                 sh '''#!/bin/bash
                     set -e  # Exit immediately if any command fails
+                    
+                    echo "[INFO] Setting up directories"
+                    REPORT_DIR="${WORKSPACE}/talisman_html_report"
+                    mkdir -p "${REPORT_DIR}"
+                    
                     echo "[INFO] Cloning repo for Talisman scan"
                     rm -rf webapp talisman_report || true
                     git clone https://github.com/R4z1o/webapp.git webapp
@@ -18,89 +23,120 @@ pipeline {
                     mkdir -p talisman_report
                     ./talisman --scan || true
                     
-                    # Verify report directory exists
-                    if [ ! -d "talisman_report/talisman_reports/data" ]; then
-                        echo "[ERROR] Talisman report directory not found!"
-                        exit 1
-                    fi
-        
-                    # Create HTML report directory
-                    REPORT_DIR="${WORKSPACE}/talisman_html_report"
-                    mkdir -p "${REPORT_DIR}"
-        
-                    # Generate HTML report
+                    # Create HTML report header
                     cat << 'EOF' > "${REPORT_DIR}/talisman_report.html"
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Talisman Scan Report</title>
+            <title>Talisman Secret Scan Report</title>
             <style>
                 body { font-family: Arial, sans-serif; margin: 20px; }
                 h1 { color: #333; }
-                table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                th { background-color: #f2f2f2; }
-                tr:nth-child(even) { background-color: #f9f9f9; }
-                .high { background-color: #ffcccc; }
-                .medium { background-color: #ffe6cc; }
-                .low { background-color: #ffffcc; }
-                .summary { margin-bottom: 20px; }
+                .summary { 
+                    background-color: #f8f9fa; 
+                    padding: 15px; 
+                    border-radius: 5px; 
+                    margin-bottom: 20px;
+                }
+                table {
+                    border-collapse: collapse;
+                    width: 100%;
+                    margin-top: 20px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }
+                th {
+                    background-color: #343a40;
+                    color: white;
+                    padding: 12px;
+                    text-align: left;
+                }
+                td {
+                    padding: 10px;
+                    border-bottom: 1px solid #ddd;
+                }
+                tr:nth-child(even) { background-color: #f2f2f2; }
+                tr:hover { background-color: #e9ecef; }
+                .critical { background-color: #ffcccc; }
+                .high { background-color: #ffe6cc; }
+                .medium { background-color: #fff3cd; }
+                .low { background-color: #d4edda; }
+                .filename { font-family: monospace; }
             </style>
         </head>
         <body>
         <h1>Talisman Secret Scan Report</h1>
-        <div class='summary'>
+        <div class="summary">
             <h2>Scan Summary</h2>
-            <p>File Content Issues: 373</p>
-            <p>Filename Issues: 2</p>
-            <p>Filesize Issues: 0</p>
-            <p>Warnings: 0</p>
-            <p>Ignored: 0</p>
+            <p><strong>File Content Issues:</strong> 373</p>
+            <p><strong>Filename Issues:</strong> 2</p>
+            <p><strong>Filesize Issues:</strong> 0</p>
+            <p><strong>Warnings:</strong> 0</p>
+            <p><strong>Ignored:</strong> 0</p>
         </div>
         <table>
-            <tr>
-                <th>File</th>
-                <th>Issue Type</th>
-                <th>Severity</th>
-                <th>Message</th>
-                <th>Commits</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th>File</th>
+                    <th>Issue Type</th>
+                    <th>Severity</th>
+                    <th>Message</th>
+                    <th>Commits</th>
+                </tr>
+            </thead>
+            <tbody>
         EOF
         
-                    # Process JSON reports
-                    find talisman_report/talisman_reports/data -name "*.json" | while read -r report_file; do
-                        echo "[INFO] Processing report file: ${report_file}"
-                        
-                        # Process failures
-                        jq -r '.failure_list[] | 
-                            "<tr class=\\\"" + .severity + "\\\">
-                                <td>" + .filename + "</td>
-                                <td>" + .type + "</td>
-                                <td>" + .severity + "</td>
-                                <td>" + (.message | gsub("\""; "'")) + "</td>
-                                <td>" + (.commits | join(", ")[0:50] + (if (.commits | length) > 1 then "..." else "" end)) + "</td>
-                            </tr>"' "${report_file}" >> "${REPORT_DIR}/talisman_report.html"
-                        
-                        # Process warnings
-                        jq -r '.warning_list[] | 
-                            "<tr class=\\\"low\\\">
-                                <td>" + .filename + "</td>
-                                <td>" + .type + "</td>
-                                <td>warning</td>
-                                <td>" + (.message | gsub("\""; "'")) + "</td>
-                                <td>" + (.commits | join(", ")[0:50] + (if (.commits | length) > 1 then "..." else "" end)) + "</td>
-                            </tr>"' "${report_file}" >> "${REPORT_DIR}/talisman_report.html"
-                    done || echo "[WARNING] No JSON reports processed"
+                    # Process JSON reports and add table rows
+                    if [ -d "talisman_report/talisman_reports/data" ]; then
+                        echo "[INFO] Processing scan results..."
+                        find talisman_report/talisman_reports/data -name "*.json" | while read -r report_file; do
+                            # Process failures
+                            jq -r '.failure_list[] | 
+                                "<tr class=\"" + (.severity | ascii_downcase) + "\">
+                                    <td class=\"filename\">" + .filename + "</td>
+                                    <td>" + .type + "</td>
+                                    <td>" + .severity + "</td>
+                                    <td>" + (.message | gsub("\""; "'")) + "</td>
+                                    <td>" + (.commits | join(", ")[0:50] + (if (.commits | length) > 1 then "..." else "" end)) + "</td>
+                                </tr>"' "${report_file}" >> "${REPORT_DIR}/talisman_report.html"
+                            
+                            # Process warnings
+                            jq -r '.warning_list[] | 
+                                "<tr class=\"low\">
+                                    <td class=\"filename\">" + .filename + "</td>
+                                    <td>" + .type + "</td>
+                                    <td>warning</td>
+                                    <td>" + (.message | gsub("\""; "'")) + "</td>
+                                    <td>" + (.commits | join(", ")[0:50] + (if (.commits | length) > 1 then "..." else "" end)) + "</td>
+                                </tr>"' "${report_file}" >> "${REPORT_DIR}/talisman_report.html"
+                        done
+                    else
+                        echo "<tr><td colspan=\"5\">No secrets detected by Talisman scan</td></tr>" >> "${REPORT_DIR}/talisman_report.html"
+                    fi
         
                     # Close HTML
-                    echo "</table></body></html>" >> "${REPORT_DIR}/talisman_report.html"
+                    cat << 'EOF' >> "${REPORT_DIR}/talisman_report.html"
+            </tbody>
+        </table>
+        </body>
+        </html>
+        EOF
         
                     echo "[INFO] HTML report generated at ${REPORT_DIR}/talisman_report.html"
-                    ls -la "${REPORT_DIR}/"
                 '''
                 archiveArtifacts allowEmptyArchive: true, 
-                                artifacts: 'talisman_html_report/*.html', 
+                                artifacts: 'talisman_html_report/talisman_report.html', 
                                 fingerprint: true
+                
+                // Optional: Publish HTML report (requires HTML Publisher plugin)
+                publishHTML(target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: 'talisman_html_report',
+                    reportFiles: 'talisman_report.html',
+                    reportName: 'Talisman Scan Report'
+                ])
             }
             post {
                 always {
