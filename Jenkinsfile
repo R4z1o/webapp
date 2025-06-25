@@ -16,17 +16,21 @@ pipeline {
                     echo "[INFO] Running Talisman Scan"
                     ./talisman --scan || true
         
-                    echo "[INFO] Waiting for report generation..."
-                    sleep 5  # Give Talisman time to generate reports
+                    echo "[INFO] Converting JSON to HTML"
+                    /root/talisman-to-html.sh \
+                        "$(pwd)/talisman_report/talisman_reports/data/report.json" \
+                        "$(pwd)/talisman_report/talisman_reports/data/output.html"
         
-                    echo "[INFO] Converting to HTML"
-                    /root/talisman-to-html.sh /root/webapp/talisman_report/talisman_reports/data/report.json /root/webapp/talisman_report/talisman_reports/data/output.html
+                    echo "[INFO] Verifying files exist:"
+                    ls -la talisman_report/talisman_reports/data/
                 '''
-                archiveArtifacts allowEmptyArchive: true, artifacts: 'webapp/talisman_report/talisman_reports/data/output.html, webapp/talisman_report/**', fingerprint: true
+                archiveArtifacts allowEmptyArchive: true, 
+                                artifacts: 'webapp/talisman_report/talisman_reports/data/*', 
+                                fingerprint: true
             }
             post {
                 always {
-                    echo "Talisman reports archived."
+                    echo "Talisman reports archived. Check artifacts for report.json and output.html"
                 }
             }
         }
