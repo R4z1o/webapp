@@ -26,8 +26,10 @@ pipeline {
                     echo "[INFO] Converting JSON to HTML"
                     /root/talisman-to-html.sh \
                         "$(pwd)/talisman_report/talisman_reports/data/report.json" \
-                        "$(pwd)/talisman_report/talisman_reports/data/output.html"
-        
+                        "$(pwd)/talisman_report/talisman_reports/data/talisman-report.html"
+
+                    rm $(pwd)/talisman_report/talisman_reports/data/report.json
+                    
                     echo "[INFO] Verifying files exist:"
                     ls -la talisman_report/talisman_reports/data/
                 '''
