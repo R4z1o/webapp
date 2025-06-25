@@ -4,21 +4,33 @@ pipeline {
         stage('Secret Scan with Talisman') {
             steps {
                 sh '''#!/bin/bash
+                    set -e  # Exit immediately if any command fails
                     echo "[INFO] Cloning repo for Talisman scan"
                     rm -rf webapp talisman_report || true
                     git clone https://github.com/R4z1o/webapp.git webapp
                     cd webapp
         
                     echo "[INFO] Installing Talisman"
-                    curl -L https://github.com/thoughtworks/talisman/releases/download/v1.37.0/talisman_linux_amd64 -o talisman
+                    curl -sSL https://github.com/thoughtworks/talisman/releases/download/v1.37.0/talisman_linux_amd64 -o talisman
                     chmod +x talisman
         
                     echo "[INFO] Running Talisman Scan"
                     mkdir -p talisman_report
                     ./talisman --scan || true
                     
-                    # Create HTML report
-                    cat << 'EOF' > talisman_report.html
+                    # Verify report directory exists
+                    if [ ! -d "talisman_report/talisman_reports/data" ]; then
+                        echo "[ERROR] Talisman report directory not found!"
+                        exit 1
+                    fi
+        
+                    # Create HTML report directory
+                    REPORT_DIR="${WORKSPACE}/talisman_html_report"
+                    mkdir -p "${REPORT_DIR}"
+        
+                    # Generate HTML report
+                    cat << 'EOF' > "${REPORT_DIR}/talisman_report.html"
+        <!DOCTYPE html>
         <html>
         <head>
             <title>Talisman Scan Report</title>
@@ -55,45 +67,44 @@ pipeline {
             </tr>
         EOF
         
-                    # Process the JSON report and convert to table rows
-                    if [ -d "talisman_report/talisman_reports/data" ]; then
-                        # Find all JSON files in the report directory
-                        for report_file in $(find talisman_report/talisman_reports/data -name "*.json"); do
-                            # Use jq to parse JSON and create table rows
-                            jq -r '.failure_list[] | 
-                                "<tr class=\\\"" + .severity + "\\\">
-                                    <td>" + .filename + "</td>
-                                    <td>" + .type + "</td>
-                                    <td>" + .severity + "</td>
-                                    <td>" + (.message | gsub("\\""; "\\\'")) + "</td>
-                                    <td>" + (.commits | join(", ")[0:50] + (if (.commits | length) > 1 then "..." else "" end)) + "</td>
-                                </tr>"' $report_file >> talisman_report.html
-                            
-                            # Process warning_list (if any)
-                            jq -r '.warning_list[] | 
-                                "<tr class=\\\"low\\\">
-                                    <td>" + .filename + "</td>
-                                    <td>" + .type + "</td>
-                                    <td>warning</td>
-                                    <td>" + (.message | gsub("\\""; "\\\'")) + "</td>
-                                    <td>" + (.commits | join(", ")[0:50] + (if (.commits | length) > 1 then "..." else "" end)) + "</td>
-                                </tr>"' $report_file >> talisman_report.html
-                        done
-                    else
-                        echo "<tr><td colspan='5'>No secrets detected by Talisman scan</td></tr>" >> talisman_report.html
-                    fi
+                    # Process JSON reports
+                    find talisman_report/talisman_reports/data -name "*.json" | while read -r report_file; do
+                        echo "[INFO] Processing report file: ${report_file}"
+                        
+                        # Process failures
+                        jq -r '.failure_list[] | 
+                            "<tr class=\\\"" + .severity + "\\\">
+                                <td>" + .filename + "</td>
+                                <td>" + .type + "</td>
+                                <td>" + .severity + "</td>
+                                <td>" + (.message | gsub("\""; "'")) + "</td>
+                                <td>" + (.commits | join(", ")[0:50] + (if (.commits | length) > 1 then "..." else "" end)) + "</td>
+                            </tr>"' "${report_file}" >> "${REPORT_DIR}/talisman_report.html"
+                        
+                        # Process warnings
+                        jq -r '.warning_list[] | 
+                            "<tr class=\\\"low\\\">
+                                <td>" + .filename + "</td>
+                                <td>" + .type + "</td>
+                                <td>warning</td>
+                                <td>" + (.message | gsub("\""; "'")) + "</td>
+                                <td>" + (.commits | join(", ")[0:50] + (if (.commits | length) > 1 then "..." else "" end)) + "</td>
+                            </tr>"' "${report_file}" >> "${REPORT_DIR}/talisman_report.html"
+                    done || echo "[WARNING] No JSON reports processed"
         
-                    # Close table and HTML
-                    echo "</table></body></html>" >> talisman_report.html
+                    # Close HTML
+                    echo "</table></body></html>" >> "${REPORT_DIR}/talisman_report.html"
         
-                    mkdir -p talisman_report
-                    mv talisman_report.html talisman_report/
+                    echo "[INFO] HTML report generated at ${REPORT_DIR}/talisman_report.html"
+                    ls -la "${REPORT_DIR}/"
                 '''
-                archiveArtifacts allowEmptyArchive: true, artifacts: 'webapp/talisman_report/**', fingerprint: true
+                archiveArtifacts allowEmptyArchive: true, 
+                                artifacts: 'talisman_html_report/*.html', 
+                                fingerprint: true
             }
             post {
                 always {
-                    echo 'Talisman reports archived.'
+                    echo 'Talisman scan completed. Report archived.'
                 }
             }
         }
