@@ -22,7 +22,7 @@ pipeline {
                     echo "[INFO] Converting to HTML"
                     /root/talisman-to-html.sh /root/webapp/talisman_report/talisman_reports/data/report.json /root/webapp/talisman_report/talisman_reports/data/output.html
                 '''
-                archiveArtifacts allowEmptyArchive: true, artifacts: 'webapp/talisman_report/**', fingerprint: true
+                archiveArtifacts allowEmptyArchive: true, artifacts: 'webapp/talisman_report/talisman_reports/data/output.html', fingerprint: true
             }
             post {
                 always {
