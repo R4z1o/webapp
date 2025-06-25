@@ -16,7 +16,7 @@ pipeline {
                     echo "[INFO] Running Talisman Scan"
                     ./talisman --scan || true
 
-                    ../talisman-to-html.sh talisman_report/talisman_reports/data/report.json output.html
+                    ./talisman-to-html.sh talisman_report/talisman_reports/data/report.json output.html
 
                 '''
                 archiveArtifacts allowEmptyArchive: true, artifacts: 'webapp/talisman_report/**', fingerprint: true
