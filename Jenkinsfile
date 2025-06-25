@@ -8,20 +8,25 @@ pipeline {
                     rm -rf webapp talisman_report || true
                     git clone https://github.com/R4z1o/webapp.git webapp
                     cd webapp
-
+        
                     echo "[INFO] Installing Talisman"
                     curl -L https://github.com/thoughtworks/talisman/releases/download/v1.37.0/talisman_linux_amd64 -o talisman
                     chmod +x talisman
-
+        
                     echo "[INFO] Running Talisman Scan"
-                    ./talisman --scan || true
-
-                    echo "<html><body><pre>" > talisman_report.html
-                    cat talisman_report.txt >> talisman_report.html
-                    echo "</pre></body></html>" >> talisman_report.html
-
                     mkdir -p talisman_report
-                    mv talisman_report.* talisman_report/
+                    ./talisman --scan || true
+                    
+                    # Create HTML report with either the actual report or a message if no report was generated
+                    echo "<html><body><pre>" > talisman_report.html
+                    if [ -d "talisman_report/talisman_reports/data" ]; then
+                        find talisman_report/talisman_reports/data -type f -exec cat {} + >> talisman_report.html
+                    else
+                        echo "No secrets detected by Talisman scan" >> talisman_report.html
+                    fi
+                    echo "</pre></body></html>" >> talisman_report.html
+        
+                    mv talisman_report.html talisman_report/
                 '''
                 archiveArtifacts allowEmptyArchive: true, artifacts: 'webapp/talisman_report/**', fingerprint: true
             }
