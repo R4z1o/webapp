@@ -20,7 +20,8 @@ pipeline {
                     /root/talisman-to-html.sh \
                         "$(pwd)/talisman_report/talisman_reports/data/report.json" \
                         "$(pwd)/talisman_report/talisman_reports/data/output.html"
-        
+
+                    rm $(pwd)/talisman_report/talisman_reports/data/report.json
                     echo "[INFO] Verifying files exist:"
                     ls -la talisman_report/talisman_reports/data/
                 '''
