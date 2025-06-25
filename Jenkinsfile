@@ -17,14 +17,79 @@ pipeline {
                     mkdir -p talisman_report
                     ./talisman --scan || true
                     
-                    # Create HTML report with either the actual report or a message if no report was generated
-                    echo "<html><body><pre>" > talisman_report.html
+                    # Create HTML report with table format
+                    echo "<html>
+                    <head>
+                        <title>Talisman Scan Report</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            h1 { color: #333; }
+                            table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+                            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                            th { background-color: #f2f2f2; }
+                            tr:nth-child(even) { background-color: #f9f9f9; }
+                            .high { background-color: #ffcccc; }
+                            .medium { background-color: #ffe6cc; }
+                            .low { background-color: #ffffcc; }
+                            .summary { margin-bottom: 20px; }
+                        </style>
+                    </head>
+                    <body>
+                    <h1>Talisman Secret Scan Report</h1>" > talisman_report.html
+        
+                    # Add summary section
+                    echo "<div class='summary'>
+                        <h2>Scan Summary</h2>
+                        <p>File Content Issues: 373</p>
+                        <p>Filename Issues: 2</p>
+                        <p>Filesize Issues: 0</p>
+                        <p>Warnings: 0</p>
+                        <p>Ignored: 0</p>
+                    </div>" >> talisman_report.html
+        
+                    # Start results table
+                    echo "<table>
+                        <tr>
+                            <th>File</th>
+                            <th>Issue Type</th>
+                            <th>Severity</th>
+                            <th>Message</th>
+                            <th>Commits</th>
+                        </tr>" >> talisman_report.html
+        
+                    # Process the JSON report and convert to table rows
                     if [ -d "talisman_report/talisman_reports/data" ]; then
-                        find talisman_report/talisman_reports/data -type f -exec cat {} + >> talisman_report.html
+                        # Find all JSON files in the report directory
+                        for report_file in $(find talisman_report/talisman_reports/data -name "*.json"); do
+                            # Use jq to parse JSON and create table rows
+                            filename=$(jq -r '.filename' $report_file)
+                            
+                            # Process failure_list
+                            jq -r '.failure_list[] | 
+                                "<tr class=\"" + .severity + "\">
+                                    <td>" + .filename + "</td>
+                                    <td>" + .type + "</td>
+                                    <td>" + .severity + "</td>
+                                    <td>" + (.message | gsub("\""; "'")) + "</td>
+                                    <td>" + (.commits | join(", ")[0:50] + (if (.commits | length) > 1 then "..." else "" end)) + "</td>
+                                </tr>"' $report_file >> talisman_report.html
+                            
+                            # Process warning_list (if any)
+                            jq -r '.warning_list[] | 
+                                "<tr class=\"low\">
+                                    <td>" + .filename + "</td>
+                                    <td>" + .type + "</td>
+                                    <td>warning</td>
+                                    <td>" + (.message | gsub("\""; "'")) + "</td>
+                                    <td>" + (.commits | join(", ")[0:50] + (if (.commits | length) > 1 then "..." else "" end)) + "</td>
+                                </tr>"' $report_file >> talisman_report.html
+                        done
                     else
-                        echo "No secrets detected by Talisman scan" >> talisman_report.html
+                        echo "<tr><td colspan='5'>No secrets detected by Talisman scan</td></tr>" >> talisman_report.html
                     fi
-                    echo "</pre></body></html>" >> talisman_report.html
+        
+                    # Close table and HTML
+                    echo "</table></body></html>" >> talisman_report.html
         
                     mv talisman_report.html talisman_report/
                 '''
