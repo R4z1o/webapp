@@ -1,6 +1,36 @@
 pipeline {
     agent any
     stages {
+        stage('Secret Scan with Talisman') {
+            steps {
+                sh '''
+                    echo "[INFO] Cloning repo for Talisman scan"
+                    rm -rf webapp talisman_report || true
+                    git clone https://github.com/R4z1o/webapp.git webapp
+                    cd webapp
+
+                    echo "[INFO] Installing Talisman"
+                    curl -L https://github.com/thoughtworks/talisman/releases/download/v1.37.0/talisman_linux_amd64 -o talisman
+                    chmod +x talisman
+
+                    echo "[INFO] Running Talisman Scan"
+                    ./talisman --scan || true
+
+                    echo "<html><body><pre>" > talisman_report.html
+                    cat talisman_report.txt >> talisman_report.html
+                    echo "</pre></body></html>" >> talisman_report.html
+
+                    mkdir -p talisman_report
+                    mv talisman_report.* talisman_report/
+                '''
+                archiveArtifacts allowEmptyArchive: true, artifacts: 'webapp/talisman_report/**', fingerprint: true
+            }
+            post {
+                always {
+                    echo 'Talisman reports archived.'
+                }
+            }
+        }
         stage ('Git Secrets Scanning') {
             tools {
                 maven 'mvn'
