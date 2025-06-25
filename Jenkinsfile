@@ -15,19 +15,29 @@ pipeline {
                     rm -rf webapp talisman_report || true
                     git clone https://github.com/R4z1o/webapp.git webapp
                     cd webapp
-
+        
                     echo "[INFO] Installing Talisman"
                     curl -L https://github.com/thoughtworks/talisman/releases/download/v1.37.0/talisman_linux_amd64 -o talisman
                     chmod +x talisman
-
+        
                     echo "[INFO] Running Talisman Scan"
                     ./talisman --scan || true
+        
+                    echo "[INFO] Converting JSON to HTML"
+                    /root/talisman-to-html.sh \
+                        "$(pwd)/talisman_report/talisman_reports/data/report.json" \
+                        "$(pwd)/talisman_report/talisman_reports/data/output.html"
+        
+                    echo "[INFO] Verifying files exist:"
+                    ls -la talisman_report/talisman_reports/data/
                 '''
-                archiveArtifacts allowEmptyArchive: true, artifacts: 'webapp/talisman_report/**', fingerprint: true
+                archiveArtifacts allowEmptyArchive: true, 
+                                artifacts: 'webapp/talisman_report/talisman_reports/data/*', 
+                                fingerprint: true
             }
             post {
                 always {
-                    echo "Talisman reports archived."
+                    echo "Talisman reports archived. Check artifacts for report.json and output.html"
                 }
             }
         }
