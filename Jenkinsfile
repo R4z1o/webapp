@@ -193,7 +193,6 @@ pipeline {
             steps {
                 script {
                     sh 'mkdir -p zap-reports'
-
                     sh '''
                         docker pull zaproxy/zap-stable
                         docker run --rm \
@@ -204,10 +203,7 @@ pipeline {
                             -t http://104.248.252.219:8888/ \
                             -r zap-report.html || true
                         '''
-                }
-                echo '[INFO] ZAP scan completed. Check the report if the build fails.'
-                sh 'ls'
-                sh 'ls zap-reports'
+                }               
                 archiveArtifacts 'zap-reports/zap-report.html'
             }
         }
