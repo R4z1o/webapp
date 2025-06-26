@@ -39,11 +39,10 @@ pipeline {
             }
             post {
                 always {
-                    echo "Talisman reports archived. Check artifacts for report.json and output.html"
+                    echo "Talisman reports archived. Check artifacts for report.json and talisman-report.html"
                 }
             }
         }
-
         stage('OWASP-dependency-check') {
             steps {
                 echo 'dependency check using OWASP'
