@@ -178,7 +178,7 @@ pipeline {
                     sh "docker push ${DOCKER_IMAGE}"
         }
             }
-        }*/
+        }
         stage('deployement for DAST') {
             steps {
                 echo 'deploying for testing'
