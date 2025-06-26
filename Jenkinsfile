@@ -193,7 +193,7 @@ pipeline {
             steps {
                 script {
                     sh 'mkdir -p zap-reports'
-                    sh """
+                    sh '''
                         docker pull zaproxy/zap-stable
                         docker run --rm \
                             -v "$WORKSPACE/zap-reports:/zap/wrk" \
@@ -202,7 +202,7 @@ pipeline {
                             zap-full-scan.py \
                             -t http://104.248.252.219:8888/ \
                             -r zap-report.html || true
-                        """
+                        '''
                 }
                 echo '[INFO] ZAP scan completed. Check the report if the build fails.'
                 archiveArtifacts 'zap-reports/zap-report.html'
