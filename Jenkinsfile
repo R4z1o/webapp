@@ -84,7 +84,7 @@ pipeline {
 
         */
 
-        /*stage('Semgrep-Scan') {
+        stage('Semgrep-Scan') {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
                     sh '''
@@ -96,7 +96,7 @@ pipeline {
                 // Note: remove the --disable-pro flag when we add more memory to the Jenkins server
                 }
             }
-        }*/
+        }
 
         stage('Generate SBOM') {
             steps {
