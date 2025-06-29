@@ -39,11 +39,10 @@ pipeline {
             }
             post {
                 always {
-                    echo "Talisman reports archived. Check artifacts for report.json and output.html"
+                    echo "Talisman reports archived. Check artifacts for report.json and talisman-report.html"
                 }
             }
         }
-
         stage('OWASP-dependency-check') {
             steps {
                 echo 'dependency check using OWASP'
@@ -193,7 +192,7 @@ pipeline {
             steps {
                 script {
                     sh 'mkdir -p zap-reports'
-                    sh """
+                    sh '''
                         docker pull zaproxy/zap-stable
                         docker run --rm \
                             -v "$WORKSPACE/zap-reports:/zap/wrk" \
@@ -202,7 +201,7 @@ pipeline {
                             zap-full-scan.py \
                             -t http://104.248.252.219:8888/ \
                             -r zap-report.html || true
-                        """
+                        '''
                 }
                 echo '[INFO] ZAP scan completed. Check the report if the build fails.'
                 archiveArtifacts 'zap-reports/zap-report.html'
