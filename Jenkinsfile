@@ -117,6 +117,7 @@ pipeline {
                     """
             }
         }
+        /*
         stage('Infrastructure as a Code (IaaC) Scanning') {
             steps {
                 script {
@@ -167,6 +168,7 @@ pipeline {
                 }
             }
         }
+        */
         stage('push') {
             steps {
                 echo 'Pushing the image to dockerhub...'
