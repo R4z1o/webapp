@@ -26,7 +26,7 @@ pipeline {
                     ./talisman --scan || true
         
                     echo "[INFO] Converting JSON to HTML"
-                    /root/talisman-to-html.sh \
+                    ~/talisman-to-html.sh \
                         "$(pwd)/talisman_report/talisman_reports/data/report.json" \
                         "$(pwd)/talisman_report/talisman_reports/data/talisman-report.html"
 
