@@ -20,6 +20,8 @@ pipeline {
                     curl -L https://github.com/thoughtworks/talisman/releases/download/v1.37.0/talisman_linux_amd64 -o talisman
                     chmod +x talisman
         
+                    ls
+                    pwd
                     echo "[INFO] Running Talisman Scan"
                     ./talisman --scan || true
         
