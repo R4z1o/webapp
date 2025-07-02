@@ -189,7 +189,7 @@ pipeline {
                 sh 'docker rm -f tomcat-devsecops'
                 sh 'docker rm -f nginx-devsecops'
                 sh "docker rm -f ${DOCKER_IMAGE}"
-                sh 'docker-compose -f docker-compose.yml up -d'
+                sh 'docker compose -f docker-compose.yml up -d'
             }
         }
         stage('DAST') {
@@ -235,7 +235,7 @@ pipeline {
                 sh 'docker rm -f tomcat-devsecops-waf'
                 sh 'docker rm -f nginx-devsecops-waf'
                 sh "docker rm -f ${DOCKER_IMAGE}"
-                sh 'docker-compose -f docker-compose-waf.yml up -d'
+                sh 'docker compose -f docker-compose-waf.yml up -d'
             }
         }
     }

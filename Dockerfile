@@ -1,14 +1,28 @@
-FROM maven:3.9.6-eclipse-temurin-17 AS build
+# Build stage
+FROM maven:3.9.6-eclipse-temurin-21 AS build
+
 WORKDIR /app
+
+# Copy source
 COPY pom.xml .
 COPY src ./src
-RUN mvn clean package
-FROM amazoncorretto:21-alpine-jdk
-RUN apk add --no-cache wget tar
-RUN wget https://downloads.apache.org/tomcat/tomcat-10/v10.1.41/bin/apache-tomcat-10.1.41.tar.gz && \
-    tar xvf apache-tomcat-10.1.41.tar.gz -C /opt/ && \
-    rm apache-tomcat-10.1.41.tar.gz
+
+# Build WAR
+RUN mvn clean package -DskipTests
+
+# Runtime stage
+FROM tomcat:10.1.41-jdk21-temurin
+
+LABEL org.opencontainers.image.source="https://github.com/DataDog/vulnerable-java-application/"
+
+# Optional: add sample files (used by your app)
+RUN mkdir -p /tmp/files && echo "hello" > /tmp/files/hello.txt && echo "world" > /tmp/files/foo.txt
+
+# Deploy WAR to Tomcat
+COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/WebApp.war
+
+# Expose port
 EXPOSE 8080
 
-COPY --from=build /app/target/WebApp.war /opt/apache-tomcat-10.1.41/webapps/
-CMD ["/opt/apache-tomcat-10.1.41/bin/catalina.sh", "run"]
+# Start Tomcat
+CMD ["catalina.sh", "run"]
