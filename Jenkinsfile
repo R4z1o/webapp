@@ -64,18 +64,7 @@ pipeline {
                 )
             }
         }
-        stage('Check-Git-Secrets') {
-            tools {
-                maven 'mvn'
-            }
-            steps {
-                sh 'rm trufflehog || true'
-                sh 'docker pull gesellix/trufflehog'
-                sh 'docker run --rm trufflesecurity/trufflehog github --repo https://github.com/R4z1o/webapp.git > trufflehog'
-                sh 'cat trufflehog'
-            }
-        }
-        /*
+        
         stage('SonarQube Analysis') {
             steps{
                 withSonarQubeEnv(installationName: 'sonarQube') {
@@ -84,9 +73,9 @@ pipeline {
             }
         }
 
-        */
+    
 
-        /*stage('Semgrep-Scan') {
+        stage('Semgrep-Scan') {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
                     sh '''
@@ -98,7 +87,7 @@ pipeline {
                 // Note: remove the --disable-pro flag when we add more memory to the Jenkins server
                 }
             }
-        }*/
+        }
 
         stage('Generate SBOM') {
             steps {
@@ -119,8 +108,8 @@ pipeline {
                     """
             }
         }
-        /*
-        stage('Infrastructure as a Code (IaaC) Scanning') {
+        
+        stage('Container Security') {
             steps {
                 script {
                     sh'''
@@ -170,7 +159,7 @@ pipeline {
                 }
             }
         }
-        */
+        
         stage('push') {
             steps {
                 echo 'Pushing the image to dockerhub...'
