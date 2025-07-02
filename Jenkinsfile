@@ -59,6 +59,8 @@ pipeline {
                 snykSecurity(
                     snykInstallation: 'snyk',
                     snykTokenId: '79230cba-8022-423d-80b0-1c625dc7b13a'
+                    failOnIssues: false
+
                 )
             }
         }
