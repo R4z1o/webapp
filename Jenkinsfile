@@ -7,8 +7,8 @@ pipeline {
         SEMGREP_APP_TOKEN = credentials('SEMGREP_APP_TOKEN')
     }
 
-    /*stages {
-        stage('Secret Scan with Talisman') {
+    stages {
+        /*stage('Secret Scan with Talisman') {
             steps {
                 sh '''
                     echo "[INFO] Cloning repo for Talisman scan"
