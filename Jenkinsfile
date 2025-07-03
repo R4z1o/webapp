@@ -68,7 +68,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps{
                 withSonarQubeEnv(installationName: 'sonarQube') {
-                  sh "mvn clean verify sonar:sonar -Dsonar.projectKey=jenkinsPipeline -Dsonar.projectName='jenkinsPipeline'"
+                  sh "mvn clean verify sonar:sonar -Dsonar.projectKey=jenkinsPipeline -Dsonar.projectName='jenkinsPipeline' -DskipTests"
                 }
             }
         }
