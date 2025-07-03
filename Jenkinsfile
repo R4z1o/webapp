@@ -230,7 +230,7 @@ pipeline {
             }
         }
     }
-    post {
+    /*post {
         always {
             // Publish ZAP Report
             publishHTML target: [
@@ -244,5 +244,5 @@ pipeline {
             // Cleanup Trivy cache
             sh "rm -rf ${TRIVY_CACHE_DIR} || true"
         }
-    }
+    }*/
 }
