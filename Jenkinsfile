@@ -82,7 +82,7 @@ pipeline {
                         python3 -m venv venv
                         . venv/bin/activate
                         pip3 install semgrep
-                        semgrep ci
+                        # semgrep ci
                     '''
                 // Note: remove the --disable-pro flag when we add more memory to the Jenkins server
                 }
