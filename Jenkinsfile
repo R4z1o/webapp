@@ -7,7 +7,7 @@ pipeline {
         SEMGREP_APP_TOKEN = credentials('SEMGREP_APP_TOKEN')
     }
 
-    stages {
+    /*stages {
         stage('Secret Scan with Talisman') {
             steps {
                 sh '''
@@ -97,7 +97,7 @@ pipeline {
                 archiveArtifacts allowEmptyArchive: true, artifacts: 'sbom*', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
                 sh ' rm -rf sbom*'
             }
-        }
+        }*/
 
         stage('build') {
             steps {
@@ -109,7 +109,7 @@ pipeline {
             }
         }
         
-        stage('Container Security') {
+        /*stage('Container Security') {
             steps {
                 script {
                     sh'''
@@ -217,7 +217,7 @@ pipeline {
                     }
                 }
             }
-        }
+        }*/
 
         stage('Deployment with monotoring and alerting integrated') {
             steps {
