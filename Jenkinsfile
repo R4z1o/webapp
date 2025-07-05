@@ -74,14 +74,11 @@ pipeline {
         }
 
     
-
         stage('Semgrep-Scan') {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
                     sh '''
-                        python3 -m venv venv
-                        . venv/bin/activate
-                        pip3 install semgrep
+                        echo "[INFO] Start Semgrep Scan"
                         # semgrep ci
                     '''
                 // Note: remove the --disable-pro flag when we add more memory to the Jenkins server
