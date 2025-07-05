@@ -8,7 +8,7 @@ pipeline {
     }
 
     stages {
-        /*stage('Secret Scan with Talisman') {
+        stage('Secret Scan with Talisman') {
             steps {
                 sh '''
                     echo "[INFO] Cloning repo for Talisman scan"
@@ -97,7 +97,7 @@ pipeline {
                 archiveArtifacts allowEmptyArchive: true, artifacts: 'sbom*', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
                 sh ' rm -rf sbom*'
             }
-        }*/
+        }
 
         stage('build') {
             steps {
@@ -109,7 +109,7 @@ pipeline {
             }
         }
         
-        /*stage('Container Security') {
+        stage('Container Security') {
             steps {
                 script {
                     sh'''
@@ -217,7 +217,7 @@ pipeline {
                     }
                 }
             }
-        }*/
+        }
 
         stage('Deployment with monotoring and alerting integrated') {
             steps {
@@ -230,7 +230,7 @@ pipeline {
             }
         }
     }
-    /*post {
+    post {
         always {
             // Publish ZAP Report
             publishHTML target: [
@@ -244,5 +244,5 @@ pipeline {
             // Cleanup Trivy cache
             sh "rm -rf ${TRIVY_CACHE_DIR} || true"
         }
-    }*/
+    }
 }
