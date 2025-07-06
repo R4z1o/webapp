@@ -1,0 +1,119 @@
+                  
+┌────────────────┐
+│ Debugging Info │
+└────────────────┘
+                  
+  SCAN ENVIRONMENT
+  versions    - semgrep 1.120.1 on python 3.12.10                      
+  environment - running in environment git, triggering event is unknown
+            
+  CONNECTION
+  Initializing scan (deployment=ghost-man230-personal-org, scan_id=78734648)  
+  Enabled products: Code, Supply Chain                                                                                                                      
+        
+        
+  ENGINE
+  Using Semgrep Pro Version: 1.120.1
+  Installed at /home/whydude230/.local/lib/python3.12/site-packages/semgrep/bi
+                                                                              
+                                                                              
+  Scanning 57 files (only git-tracked) with 2453 Code rules:
+            
+  CODE RULES
+                                                                              
+  Language      Rules   Files          Origin      Rules                      
+ ─────────────────────────────        ───────────────────                     
+  <multilang>      73      39          Pro rules    1390                      
+  java            261      14          Community    1063                      
+  js              324       6                                                 
+  html              1       6                                                 
+  yaml             31       2                                                 
+  dockerfile        6       1                                                 
+  json              4       1                                                 
+                                                                              
+                    
+  SUPPLY CHAIN RULES
+                  
+  No rules to run.
+                  
+          
+  PROGRESS
+   
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:11                                                                              
+  Uploading scan results  
+  Finalizing scan                                                                                       
+                                
+                                
+┌──────────────────────────────┐
+│ 4 Non-blocking Code Findings │
+└──────────────────────────────┘
+                             
+    Dockerfile
+   ❯❯❱ dockerfile.security.missing-user.missing-user
+          By not specifying a USER, a program in the container may  
+          run as 'root'. This is a security hazard. If an attacker  
+          can control a process running as root, they may have      
+          control over the container. Ensure that the last USER in a
+          Dockerfile is a USER other than 'root'.                   
+          Details: https://sg.run/Gbvn                              
+                                                                    
+           ▶▶┆ Autofix ▶ USER non-root CMD ["catalina.sh", "run"]
+           28┆ CMD ["catalina.sh", "run"]
+                              
+    Jenkinsfile
+   ❯❯❱ generic.secrets.security.detected-snyk-api-key.detected-snyk-api-key
+          Snyk API Key detected       
+          Details: https://sg.run/lxO9
+                                      
+           61┆ snykTokenId:                           
+               '79230cba-8022-423d-80b0-1c625dc7b13a',
+                                                            
+    src/main/resources/application.properties
+   ❯❯❱ java.spring.security.audit.spring-actuator-fully-enabled.spring-
+       actuator-fully-enabled                                          
+          Spring Boot Actuator is fully enabled. This exposes     
+          sensitive endpoints such as /actuator/env,              
+          /actuator/logfile, /actuator/heapdump and others. Unless
+          you have Spring Security enabled or another means to    
+          protect these endpoints, this functionality is available
+          without authentication, causing a significant security  
+          risk.                                                   
+          Details: https://sg.run/L0vY                            
+                                                                  
+            2┆ management.endpoints.web.exposure.include=*
+                                                        
+    target/classes/application.properties
+   ❯❯❱ java.spring.security.audit.spring-actuator-fully-enabled.spring-
+       actuator-fully-enabled                                          
+          Spring Boot Actuator is fully enabled. This exposes     
+          sensitive endpoints such as /actuator/env,              
+          /actuator/logfile, /actuator/heapdump and others. Unless
+          you have Spring Security enabled or another means to    
+          protect these endpoints, this functionality is available
+          without authentication, causing a significant security  
+          risk.                                                   
+          Details: https://sg.run/L0vY                            
+                                                                  
+            2┆ management.endpoints.web.exposure.include=*
+
+                
+                
+┌──────────────┐
+│ Scan Summary │
+└──────────────┘
+✅ CI scan completed successfully.
+ • Findings: 4 (0 blocking)
+ • Rules run: 25818
+ • Targets scanned: 57
+ • Parsed lines: ~100.0%
+ • Scan skipped: 
+   ◦ Files matching .semgrepignore patterns: 2
+ • Scan was limited to files tracked by git
+ • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+CI scan completed successfully.
+  View results in Semgrep Cloud Platform:
+    https://semgrep.dev/orgs/ghost-man230-personal-org/findings?repo=local_scan/webapp&ref=elmehdi
+    https://semgrep.dev/orgs/ghost-man230-personal-org/supply-chain/vulnerabilities?repo=local_scan/webapp&ref=elmehdi
+  No blocking findings so exiting with code 0
+
+⏫ A new version of Semgrep is available. See https://semgrep.dev/docs/upgrading
