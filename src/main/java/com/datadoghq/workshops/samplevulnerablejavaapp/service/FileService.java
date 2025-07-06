@@ -14,7 +14,7 @@ public class FileService {
         if(!path.startsWith(ALLOWED_PREFIX)) {
             throw new FileForbiddenFileException("You are not allowed to read " + path);
         }
-        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(ALLOWED_PREFIX + path))) {
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();
 

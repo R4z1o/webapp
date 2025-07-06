@@ -21,6 +21,8 @@ RUN mkdir -p /tmp/files && echo "hello" > /tmp/files/hello.txt && echo "world" >
 # Deploy WAR to Tomcat
 COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/WebApp.war
 
+RUN apt-get update && apt-get install -y iputils-ping && rm -rf /var/lib/apt/lists/*
+
 # Expose port
 EXPOSE 8080
 
