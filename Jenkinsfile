@@ -222,6 +222,9 @@ pipeline {
             steps {
                 echo 'deployment'
                 sh 'docker-compose down --rmi local --volumes --remove-orphans || true'
+                sh 'docker rm -f elasticsearch'
+                sh 'docker rm -f kibana'
+                sh 'docker rm -f logstash'
                 sh 'docker rm -f tomcat-devsecops-waf'
                 sh 'docker rm -f nginx-devsecops-waf'
                 sh "docker rm -f ${DOCKER_IMAGE}"
