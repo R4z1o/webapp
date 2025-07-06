@@ -79,6 +79,8 @@ pipeline {
                 timeout(time: 10, unit: 'MINUTES') {
                     sh '''
                         echo "[INFO] Start Semgrep Scan"
+                        sleep 10
+                        cat semgrep_res
                         # semgrep ci
                     '''
                 // Note: remove the --disable-pro flag when we add more memory to the Jenkins server
